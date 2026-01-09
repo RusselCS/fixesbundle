@@ -1,3 +1,8 @@
+server noarchive string crocutil_sv_mapcode = "MAP01";
+server noarchive int crocutil_sv_maxlives = 0;
+
+server noarchive bool miscfixes_onetimeteamspawn = true;
+
 server noarchive bool banwep_SuperArmWep = false;
 server noarchive bool banwep_HyperBombWep = false;
 server noarchive bool banwep_IceSlasherWep = false;

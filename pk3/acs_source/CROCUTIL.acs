@@ -1,0 +1,52 @@
+#library "CROCUTIL"
+
+#include "zcommon.acs"
+
+script "crocutil_updatemapcode" (int ev, int a, int b) EVENT
+{
+    if(ev != GAMEEVENT_LEVEL_INIT)
+        terminate;
+
+    SetCVarString("crocutil_sv_mapcode", StrParam(n:PRINTNAME_LEVEL));
+}
+
+script "crocutil_scorchedearthmode" (void)
+{
+    SetCVarString("replaceitem_etank", "bighealth");
+    SetCVarString("replaceitem_mtank", "megahealth");
+    SetCvar("mm8bdm_sv_nohealth", 1);
+    SetCvar("mm8bdm_sv_nolmspickups", 0);
+    SetCvar("mm8bdm_sv_nolmsweapons", 1);
+    ConsoleCommand("sv_maxlives 2");
+    ConsoleCommand("sv_keepteams 1");
+    ConsoleCommand("sv_noteamselect 1");
+    ConsoleCommand("sv_nodrop 1");
+    ConsoleCommand("sv_nocrouch 1");
+    ConsoleCommand("sv_crouch 0");
+    ConsoleCommand("sv_shootthroughallies 1");
+    ConsoleCommand("sv_forcerespawn 1");
+    ConsoleCommand("sv_spawnfarthest 1");
+    ConsoleCommand("lms_spectatorchat 1");
+    ConsoleCommand("winlimit 2");
+    ConsoleCommand("teamlms true");
+    delay(1);
+    ConsoleCommand("map $crocutil_sv_mapcode");
+}
+
+script "crocutil_maxlives_enter" ENTER
+{
+    if(GetCvar("sv_maxlives") == 0)
+        SetPlayerLivesLeft(PlayerNumber(), GetCVar("crocutil_sv_maxlives"));
+}
+
+script "crocutil_maxlives_sentinel" OPEN
+{
+    int cvar = 0;
+    while(true)
+    {
+        if(GetCvar("sv_maxlives") != cvar) {
+            SetCVar("crocutil_sv_maxlives", GetCvar("sv_maxlives"));
+        }
+        delay(1);
+    }
+}

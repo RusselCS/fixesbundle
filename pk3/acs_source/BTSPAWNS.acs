@@ -1,23 +1,9 @@
 #library "BTSPAWNS"
 #include "zcommon.acs"
 
-
-script "BTLMS_ENTER" ENTER // invulnerability script
+script "miscfixes_teamspawns" OPEN
 {
-	Delay(1);
-	
-	if(GetCVar("BTLMS_InvulnBlast"))
-		GiveInventory("LMSRepulsion", 1);
-}
-
-script "BTLMS_RESPAWN" RESPAWN // Calls the previous script on respawn
-{
-	ACS_NamedExecuteAlways("BTLMS_ENTER", 0);
-}
-
-script "BTLMS_TEAMSPAWNS" OPEN
-{
-	if(GetCVar("BTLMS_OverrideTeamStarts"))
+	if(GetCVar("miscfixes_onetimeteamspawn"))
 	{
 		ConsoleCommand("sv_useteamstartsindm true");
 		Delay(5*35);
