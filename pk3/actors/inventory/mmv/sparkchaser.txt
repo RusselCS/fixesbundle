@@ -1,0 +1,281 @@
+actor SparkChaserWep_NormalBar : NormalBar { args 104, 198 }
+
+actor SparkChaserWep : BaseMM8BDMWep 10102
+{
+//$Category MM8BDM-Weapons/Ranged
+//$Title Spark Chaser
+//$Sprite SCHSA0
+Weapon.AmmoUse 2
+Weapon.AmmoGive 28
+Weapon.SlotNumber 2
+Inventory.Pickupmessage "$PU_SPARKCHASER"
+Obituary "$OB_SPARKCHASER"
+Tag "$TAG_SPARKCHASER"
+weapon.ammotype "SparkChaserAmmo"
+inventory.icon "SCHSWI"
+States
+{
+SpawnLoop:
+SCHS A -1
+loop 
+Ready:
+SCHS E 0 ACS_NamedExecuteWithResult("core_weaponcolor",CLR_SPARKCHASER)
+SCHS E 1 A_WeaponReady
+Goto Ready+1
+Deselect:
+SCHS E 0
+goto DeselectSwap
+Select:
+SCHS E 0
+goto SelectSwap
+Fire:
+SCHS E 0 A_JumpIfNoAmmo("NoAmmo")
+SCHS E 0 A_PlaySoundEx("weapons/mmv/sparkchaserfire","Weapon")
+SCHS E 0 A_FireCustomMissile("SparkChaser",0,1,8,0)
+SCHS FG 6
+SCHS E 5
+SCHS E 0 A_Refire
+Goto Ready+1
+NoAmmo:
+SCHS E 1 ACS_NamedExecuteAlways("core_noammo",0)
+Goto Ready+1
+}
+}
+
+actor SparkChaserAmmo : Ammo
+{
+inventory.amount 1
+inventory.maxamount 28
++INVENTORY.IGNORESKILL
+}
+
+actor SparkChaserTrail : BasicGraphicEffect
+{
+    +FORCEXYBILLBOARD
+    +BRIGHT
+    Speed 60
+    States
+    {
+    Spawn:
+        SCHS D 10
+        stop
+    }
+}
+
+actor SparkChaser : BasicProjectile
+{
+    var int user_speed;
+    var int user_frames;
+    var int user_frameMax;
+    var int user_tagwait;
+    +SEEKERMISSILE
+    +FORCEXYBILLBOARD
+    +RIPPER
+    +BRIGHT
+    Radius 4
+    Height 4
+    damage ((user_frames!=0)*8)
+    speed 1
+    reactiontime 30
+    Obituary "$OB_SPARKCHASER"
+    damagetype "SparkChaser"
+    States
+    {
+    Spawn:
+        TNT1 A 0
+        SCHS D 0 ACS_NamedExecuteAlways("core_targetyawpitch", 0, 0) // Set the starting pitch
+        SCHS D 0 A_SetUserVar(user_speed, 40)
+        SCHS D 0 A_SetUserVar(user_frameMax, 10)
+        goto FlashMove
+    SpawnMove:
+        SCHS D 0 A_SpawnItemEx("SparkChaserTrail", cos(pitch)*user_speed/2, 0, sin(-pitch)*user_speed/2, 0, 0, 0, 0, SXF_WEPFXCOLOR)
+        SCHS D 1 A_SpawnItemEx("SparkChaserTrail", 0, 0, 0, 0, 0, 0, 0, SXF_WEPFXCOLOR)
+        SCHS D 0 A_SetUserVar(user_frames, user_frames-1)
+        SCHS D 0 A_JumpIf(user_frames == 0, "Flash")
+        loop
+    Flash:
+        SCHS D 0 A_JumpIfInventory("SparkChaserTagged", 1, "SetTag", AAPTR_TRACER)
+        SCHS D 0 A_PlaySoundEx("weapons/mmv/sparkchaserfly", "body")
+        SCHS D 0 A_RearrangePointers(AAPTR_DEFAULT, AAPTR_DEFAULT, AAPTR_NULL) // Clear previous hit
+        SCHS D 0 A_SeekerMissile(0, 0, SMF_LOOK, 256, 8)
+        SCHS D 0 A_Warp(AAPTR_DEFAULT, 0, 0, 0, 0, WARPF_STOP)
+        SCHS D 0 A_JumpIf(CallACS("core_compareptr", AAPTR_TRACER, AAPTR_MASTER), "FlashRetarget")
+        SCHS CCBBC 2
+        SCHS D 0 A_Countdown
+        SCHS D 0 A_JumpIfTargetInLOS("FlashSearch", 0, JLOSF_PROJECTILE)
+        goto FlashMove
+    SetTag:
+        SCHS D 0 A_SetUserVar(user_tagwait, 4)
+        SCHS D 0 A_RearrangePointers(AAPTR_DEFAULT, AAPTR_TRACER, AAPTR_DEFAULT) // Store Tracer in Master
+        goto Flash+1
+    ClearTag:
+        SCHS D 0 A_RearrangePointers(AAPTR_DEFAULT, AAPTR_NULL, AAPTR_DEFAULT) // Clear Master
+        goto Flash+6
+    FlashRetarget:
+        SCHS D 0 A_SetUserVar(user_tagwait, user_tagwait-1)
+        SCHS D 0 A_JumpIf(user_tagwait <= 0, "ClearTag")
+        SCHS D 1 A_GiveInventory("SparkChaserCantseek", 1, AAPTR_MASTER)
+        goto Flash+2
+    FlashSearch:
+        SCHS D 0 ACS_NamedExecuteAlways("core_lookatptr", 0, AAPTR_TRACER)
+        goto FlashMove
+    FlashMove:
+        SCHS C 2
+        SCHS D 0 A_ChangeVelocity(cos(pitch)*user_speed, 0, sin(-pitch)*user_speed, CVF_RELATIVE|CVF_REPLACE)
+        SCHS D 0 A_SetUserVar(user_frames, user_frameMax)
+        goto SpawnMove
+    Death:
+        TNT1 A 0
+        stop
+    }
+}
+
+actor SparkChaserCantSeekCounter : Inventory
+{
+    inventory.amount 1
+    inventory.maxamount 100
+}
+
+actor SparkChaserCantseek : CustomInventory
+{
+    +INVENTORY.AUTOACTIVATE
+    States
+    {
+    Use:
+        TNT1 A 0 ACS_NamedExecuteWithResult("core_cantseekplayer", 0, true) // $WeapFixes
+        TNT1 A 0 A_GiveInventory("SparkChaserCantSeekCounter", 15)
+        TNT1 A 0 A_SpawnItemEx("SparkChaserCantseekWatcher")
+        stop
+    }
+}
+
+actor SparkChaserCantseekWatcher
+{
+    PROJECTILE
+    +NOINTERACTION
+    renderstyle none
+    States
+    {
+    Spawn:
+        PLY1 A 1
+        TNT1 A 0 A_TakeFromTarget("SparkChaserCantSeekCounter", 1)
+        TNT1 A 0 A_JumpIfInTargetInventory("SparkChaserCantSeekCounter", 1, "Spawn")
+        TNT1 A 0 A_GiveToTarget("SparkChaserCanSeek", 1)
+        stop
+    }
+}
+
+actor SparkChaserCanSeek : CustomInventory
+{
+    +INVENTORY.AUTOACTIVATE
+    States
+    {
+    Use:
+        TNT1 A 0 ACS_NamedExecuteWithResult("core_cantseekplayer", 0, false) // $WeapFixes
+        stop
+    }
+}
+
+actor SparkChaserTagged : PowerUp
+{
+    powerup.duration 14
+}
+
+// LEGACY
+/*
+
+actor SparkChaser
+{
+PROJECTILE
++SEEKERMISSILE
++FORCEXYBILLBOARD
++RIPPER
+Radius 4
+Height 4
+scale 2.5
+damage ((momx!=0 || momy!=0 || momz!=0)*6)
+speed 1
+Obituary "$OB_SPARKCHASER"
+damagetype "SparkChaser"
+var int user_speed;
+var int user_frames;
+var int user_frameMax;
+var int user_tagged;
+var int user_timer;
+var int user_tagTimer;
+States
+{
+Spawn:
+    TNT1 A 0
+    SCHS D 0 ACS_NamedExecuteAlways("core_targetyawpitch", 0, 0) // Set the starting pitch
+    SCHS D 0 A_SetUserVar(user_speed, 40)
+    SCHS D 0 A_SetUserVar(user_frameMax, 10)
+    SCHS D 0 A_SetUserVar(user_timer, 8)
+    goto FlashMove
+SpawnMove:
+    SCHS D 0 A_JumpIfTracerCloser(user_speed, "Tagged")
+    SCHS D 0 A_SpawnItemEx("SparkChaserTrail", cos(pitch)*user_speed/2, 0, sin(-pitch)*user_speed/2)
+    SCHS D 1 A_SpawnItemEx("SparkChaserTrail", 0, 0, 0)
+    SCHS D 0 A_SetUserVar(user_frames, user_frames-1)
+    SCHS D 0 A_JumpIf(user_frames == 0, "Flash")
+    loop
+Tagged:
+    SCHS D 0 A_SetUserVar(user_tagged, 1)
+    goto MoveTagged
+MoveTagged:
+    SCHS D 0 A_SpawnItemEx("SparkChaserTrail", cos(pitch)*user_speed/2, 0, sin(-pitch)*user_speed/2)
+    SCHS D 1 A_SpawnItemEx("SparkChaserTrail", 0, 0, 0)
+    SCHS D 0 A_SetUserVar(user_frames, user_frames-1)
+    SCHS D 0 A_JumpIf(user_frames == 0, "Flash")
+    loop
+Flash:
+    SCHS D 0 A_PlaySoundEx("weapons/mmv/sparkchaserfly", "body")
+    SCHS D 0 A_JumpIf(user_timer <= 0, "FlashRemove")
+    SCHS D 0 A_SetUserVar(user_timer, user_timer-1)
+    SCHS D 0 A_JumpIf(user_tagged == 2, "FlashClear")
+    SCHS D 0 A_JumpIf(user_tagged == 1, "FlashTagged")
+    SCHS D 0 A_RearrangePointers(AAPTR_DEFAULT, AAPTR_DEFAULT, AAPTR_NULL) // Clear previous hit
+    SCHS D 0 A_SeekerMissile(0, 0, SMF_LOOK, 256, 8)
+    SCHS D 0 A_JumpIf(CallACS("core_compareptr", AAPTR_TRACER, AAPTR_MASTER), "FlashRetarget")
+    SCHS D 0 A_Warp(AAPTR_DEFAULT, 0, 0, 0, 0, WARPF_STOP)
+    SCHS CCBBC 2
+    SCHS D 0 A_JumpIfTargetInLOS("FlashSearch", 0, JLOSF_PROJECTILE)
+    goto FlashMove
+FlashTagged:
+    SCHS D 0 A_SetUserVar(user_tagTimer, 4)
+    SCHS D 0 A_RearrangePointers(AAPTR_DEFAULT, AAPTR_TRACER, AAPTR_DEFAULT) // Store Tracer in Master
+    SCHS D 0 A_SetUserVar(user_tagged, 2)
+    goto Flash+1
+FlashClear:
+    SCHS D 0 A_RearrangePointers(AAPTR_DEFAULT, AAPTR_NULL, AAPTR_DEFAULT) // Clear Master
+    SCHS D 0 A_SetUserVar(user_tagged, 0)
+    goto Flash+1
+FlashRetarget:
+    SCHS C 0 A_GiveInventory("SparkChaserCantseek", 1, AAPTR_MASTER)
+    SCHS C 0 A_SetUserVar(user_tagTimer, user_tagTimer-1)
+    SCHS C 0 A_JumpIf(user_tagTimer > 0, "FlashRetargetEnd")
+    SCHS D 0 A_RearrangePointers(AAPTR_DEFAULT, AAPTR_DEFAULT, AAPTR_NULL) // Clear previous hit
+FlashRetargetEnd:
+    SCHS C 2
+    SCHS C 0 A_printBold("help")
+    SCHS C 0 A_SeekerMissile(0, 0, SMF_LOOK, 256, 8)
+    SCHS D 0 A_Warp(AAPTR_DEFAULT, 0, 0, 0, 0, WARPF_STOP)
+    SCHS CBBC 2
+    SCHS D 0 A_JumpIfTargetInLOS("FlashSearch", 0, JLOSF_PROJECTILE)
+    goto FlashMove
+FlashSearch:
+    SCHS D 0 ACS_NamedExecuteAlways("core_lookatptr", 0, AAPTR_TRACER)
+    goto FlashMove
+FlashRemove:
+    SCHS D 0 A_Warp(AAPTR_DEFAULT, 0, 0, 0, 0, WARPF_STOP)
+    SCHS CBBC 2
+    goto FlashMove
+FlashMove:
+    SCHS C 2
+    SCHS D 0 A_ChangeVelocity(cos(pitch)*user_speed, 0, sin(-pitch)*user_speed, CVF_RELATIVE|CVF_REPLACE)
+    SCHS D 0 A_SetUserVar(user_frames, user_frameMax)
+    goto SpawnMove
+}
+}
+
+*/

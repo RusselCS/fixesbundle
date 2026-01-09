@@ -1,0 +1,34 @@
+#include "8BDMMATH.acs"
+
+function int rgbTriplet(int a, int b, int c)
+{
+	return packBytes(a,b,c,0);
+}
+
+// This returns an int containing 3 bytes packed into it.
+// Use functions UnpackByte1, UnpackByte2, and UnpackByte3 to access the
+// R, G, and B values respectively
+function int RGBHex2Dec(str x)
+{
+	if(StrLen(x) != 8) {
+		// [Russ] Normally, to help devs, I would have this here as a warning.
+		// But with it there, if a client dropped a connection packet, this warning would be thrown randomly.
+		// Not good optics. Gonna leave this out for now.
+		//Log(s:"\cgACS: RGBHex2Dec: Expected RGB color string to be 8 characters.");
+		return -1;
+	}
+	
+	str r = StrParam(c:GetChar(x, 0), c:GetChar(x, 1));
+	str g = StrParam(c:GetChar(x, 3), c:GetChar(x, 4));
+	str b = StrParam(c:GetChar(x, 6), c:GetChar(x, 7));
+	
+	return packBytes(hex2Dec(r), hex2Dec(g), hex2Dec(b), 0);
+}
+
+function int invertRGBTriplet(int triplet) {
+	return RGBTriplet(255 - UnpackByte1(triplet), 255 - UnpackByte2(triplet), 255 - UnpackByte3(triplet));
+}
+
+function int brightenRGBTriplet(int triplet, int shift) {
+	return RGBTriplet(clamp(UnpackByte1(triplet)+shift, 0, 255), clamp(UnpackByte2(triplet)+shift, 0, 255), clamp(UnpackByte3(triplet)+shift, 0, 255));
+}

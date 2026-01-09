@@ -1,0 +1,33 @@
+actor ElecWatcher 10578
+{
+//$Category MM8BDM-Props
++NOGRAVITY
+-SOLID
+scale 2.5
+//+FLOATBOB
+height 1
+radius 1
+States
+{
+Spawn:
+ELCW A 0
+ELCW A 0 A_ChangeFlag("FLOATBOB", true)
+SpawnLoop:
+ELCW A 35 
+ELCW A 5 A_Jump(200, "SpawnLoop")
+ELCW B 5
+ELCW C 70
+ELCW B 5
+loop
+}
+}
+
+actor ElecBeamDamager : CustomInventory
+{
+States
+{
+Pickup:
+TNT1 A 0 Thing_Damage(tid, 15, 25) // MOD_DISINTEGRATE
+stop
+}
+}

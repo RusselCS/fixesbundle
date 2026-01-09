@@ -1,0 +1,313 @@
+const int WEPC_2TS_RADIUS = 350;
+
+actor TimeStopperWep_NormalBar : NormalBar { args 34, 239 }
+
+actor TimeStopperWep : BaseMM8BDMWep 10043
+{
+//$Category MM8BDM-Weapons/AoE
+//$Title Time Stopper
+//$Sprite WEAPN0
+Weapon.AmmoUse 112
+Weapon.AmmoGive 112
+Weapon.SlotNumber 6
+Obituary "$OB_TIMESTOPPER"
+Tag "$TAG_TIMESTOPPER"
+Inventory.Pickupmessage "$PU_TIMESTOPPER"
+weapon.ammotype "TimeStopperAmmo"
++WEAPON.AMMO_OPTIONAL
+inventory.icon "FLASHSI"
+damagetype "TimeStopper"
+Scale 2.0
+States
+{
+SpawnLoop:
+WEAP N -1
+Loop
+Ready:
+FLAS D 0 ACS_NamedExecuteWithResult("core_weaponcolor",CLR_TIMESTOPPER)
+FLAS D 1 A_WeaponReady
+Goto Ready+1
+Deselect:
+FLAS D 0
+goto DeselectSwap
+Select:
+FLAS D 0
+goto SelectSwap
+Fire:
+FLAS E 0 A_JumpIFInventory("IsBot", 1 ,"BotFire")
+FLAS D 0 A_JumpIfNoAmmo("NoAmmo")
+FLAS EFGH 2
+FireFlash:
+FLAS DDDDDDDDDDDDDD 0 A_SpawnItemEx("TimeStopGFX", random(0,WEPC_2TS_RADIUS), 0, random(0,WEPC_2TS_RADIUS - 175), 0, 0, 0, random(0, 359))
+FLAS H 1
+FLAS DDDDDDDDDDDDDD 0 A_SpawnItemEx("TimeStopGFX", random(0,WEPC_2TS_RADIUS), 0, random(0,WEPC_2TS_RADIUS - 175), 0, 0, 0, random(0, 359))
+FLAS H 1
+FLAS D 0 A_PlaySoundEx("weapons/mm2/timestopperfire","Weapon")
+FLAS D 0 A_SpawnItemEx("TimeStopperRadius")
+//FLAS D 0 A_RadiusGive("TimeStopMonster", TSTOPPER_RADIUS, RGF_MONSTERS)
+FLAS D 0 ACS_NamedExecuteAlways("core_whiteflash",0)
+FLAS D 0 A_TakeInventory("TimeStopperAmmo",112,TIF_NOTAKEINFINITE)
+FLAS I 2
+FLAS JKL 2
+FLAS J 10
+FLAS GFE 3
+FLAS D 0 A_Refire
+Goto Ready+1
+NoAmmo:
+FLAS D 1 ACS_NamedExecuteAlways("core_noammo",0)
+FLAS D 1 A_Refire
+Goto Ready+1
+
+BotFire:
+FLAS E 0 A_JumpIfInventory("BotTimeStopperCooldown", 1, "BotFireBuster")
+FLAS D 0 A_JumpIfNoAmmo("NoAmmo")
+FLAS EFGH 2
+FLAS D 10 A_JumpIf(ACS_NamedExecuteWithResult("core_radiuspull", 0, WEPC_2TS_RADIUS, 0)>0, "BotFireFlash") 
+Goto Ready+1
+BotFireFlash:
+FLAS D 0 A_GiveInventory("BotTimeStopperCooldown", 1)
+Goto FireFlash
+BotFireBuster:
+BUST B 0 ACS_NamedExecuteWithResult("core_weaponcolor",CLR_MEGABUSTER)
+BUST B 0 A_PlaySoundEx("weapons/busters/megabusterfire","SoundSlot6")
+BUST B 0 A_FireCustomMissile("MegaShot",0,0,8,0)
+BUST CD 3
+BUST B 2
+BUST B 0 A_JumpIfInventory("BotTimeStopperCooldown",1,2)
+BUST B 0 ACS_NamedExecuteWithResult("core_weaponcolor",CLR_TIMESTOPPER)
+BUST B 0 A_Refire
+goto Ready
+}
+}
+
+actor BotTimeStopperCooldown : Powerup
+{
+powerup.duration -12
+}
+
+actor TimeStopperRadius : BasicExplosion
+{
+Obituary "$OB_TIMESTOPPER"
+damagetype "TimeStopper"
++PIERCEARMOR
++FOILINVUL
+states
+{
+Spawn:
+TNT1 A 0
+TNT1 A 1 A_Explode(7, WEPC_2TS_RADIUS, 0, 0, WEPC_2TS_RADIUS)
+stop
+}
+}
+
+actor TimeStopGFX : BasicGraphicEffect
+{
++BRIGHT
+var int user_TranslateWhiteColors;
+states
+{
+SpawnFrame:
+FLAS ABC 4
+stop
+}
+}
+
+actor TimeStopMonster : Once {}
+
+actor TimeStopActivator : CustomInventory
+{
+States
+{
+Pickup:
+TNT1 A 0
+TNT1 A 0 A_JumpIfInventory("TimeStoppedCounter", 1, "No")
+//TNT1 A 0 A_JumpIfInventory(ACS_NamedExecuteWithResult("core_getplayerteam", -1), "No")
+TNT1 A 0 A_Stop
+PLAY H 0 A_GiveInventory("TimeStoppedCounter",1)
+PLAY H 0 ACS_NamedExecuteWithResult("core_flyplayer",0,1,true) // $WeapFixes
+PLAY H 0 ACS_NamedExecuteWithResult("core_freezeplayer",0,1) // $WeapFixes
+TNT1 A 0 A_SpawnItemEx("TimeStoppedWatcher")
+stop
+No:
+TNT1 A 0
+stop
+}
+}
+
+actor TimeStoppedWatcher : BasicWatcher
+{
+States
+{
+Spawn:
+TNT1 A 0
+TNT1 A 1 A_Warp(AAPTR_TARGET, 0.0,0.0,0.0,0.0,WARPF_NOCHECKPOSITION)
+TNT1 A 0 A_SpawnItemEx("TimeStopGFX", random(8, 64), 0, random(0, 64), 0, 0, 0, random(0, 359))
+TNT1 A 0 A_JumpIfInTargetInventory("TimeStoppedCounter", 1, "Spawn")
+TNT1 A 5 A_GiveToTarget("TimeUnstopped")
+stop
+}
+}
+
+actor TimeStopperGFXSpawner : BasicWatcher // unused
+{
+states
+{
+Spawn:
+TNT1 AA 1 A_SpawnItemEx("TimeStopGFX", random(8, 64), 0, random(0, 64), 0, 0, 0, random(0, 359))
+stop
+}
+}
+
+actor TimeStoppedCounter : Powerup
+{
+powerup.duration 105
+}
+
+actor TimeUnstopped : CustomInventory
+{
++INVENTORY.AUTOACTIVATE
+States
+{
+Use:
+PLAY H 0 ACS_NamedExecuteWithResult("core_flyplayer",0,0,1) // $WeapFixes
+PLAY H 0 ACS_NamedExecuteWithResult("core_freezeplayer",0,0) // $WeapFixes
+stop
+}
+}
+
+actor TimeStopperAmmo : Ammo
+{
+inventory.amount 1
+inventory.maxamount 112
+}
+
+actor TimeStopperGiver : CustomInventory// 10043
+{
+//$Category MM8BDM-Weapons
+Inventory.Pickupmessage "$PU_TIMESTOPPER"
+inventory.pickupsound "weapon/weaponup"
+Inventory.RespawnTics 1800
+scale 2.0
+states
+{
+Spawn:
+WEAP N 1
+Loop
+Pickup:
+WEAP N 0 A_JumpIfInventory("TimeStopperWep",1,"Failure")
+WEAP N 0 A_GiveInventory("TimeStopperWep")
+stop
+Failure:
+WEAP N 1
+fail
+Death:
+TNT1 A 0
+stop
+}
+}
+
+/*
+actor TimeStopperWep : BaseMM8BDMWep
+{
+Weapon.AmmoUse 7
+Weapon.AmmoGive 28
+Weapon.SlotNumber 6
+Obituary "$OB_TIMESTOPPER"
+Tag "$TAG_TIMESTOPPER"
+Inventory.Pickupmessage "$PU_TIMESTOPPER"
+weapon.ammotype "TimeStopperAmmo"
+inventory.icon "FLASHSI"
+States
+{
+Spawn:
+WEAP N 1
+Loop
+Ready:
+TIMS A 0 ACS_NamedExecuteWithResult("core_weaponcolor",CLR_TIMESTOPPER)
+TIMS A 1 A_WeaponReady
+Goto Ready+1
+Deselect:
+TIMS A 0
+goto DeselectSwap
+Select:
+TIMS A 0
+goto SelectSwap
+Fire:
+TIMS A 0 A_JumpIfNoAmmo("NoAmmo")
+TIMS A 0 ACS_Execute(986,0)
+TIMS A 0 ACS_Execute(193,0)
+TIMS A 1 
+TIMS A 0 A_GiveInventory("TimeFreezer",1)
+TIMS A 0 SetPlayerProperty(1,1,4)
+TIMS A 0 SetPlayerProperty(0,0,4)
+Goto TimeStop
+TimeStop:
+TIMS A 9 A_TakeInventory("TimeStopperAmmo",1)
+TIMS A 0 A_JumpIfInventory("TimeStopperAmmo",1,"TimeStop")
+TIMS A 0 ACS_Terminate(986,0)
+TIMS A 0 A_JumpIfInventory("IsBot", 1, "BotCheck")
+TIMS A 0 ACS_Execute(987,0)
+TIMS A 5
+Goto Ready
+Hold:
+TIMS A 1 
+TIMS A 0 A_Refire
+Goto Ready+1
+NoAmmo:
+TIMS A 1 ACS_NamedExecuteAlways("core_noammo",0)
+Goto Hold
+BotCheck:
+TIMS A 1 A_GiveInventory("MegaBuster", 1)
+TIMS A 5 ACS_Execute(987,0)
+Goto Ready
+Death:
+TNT1 A 0
+stop
+}
+}
+
+actor TimeFreezer : PowerupGiver
+{
+ powerup.type "TimeFreezer"
+ powerup.duration 99999
+ +AUTOACTIVATE
+ States
+ {
+ Spawn:
+ TNT1 A 1
+ stop
+ }
+}
+
+actor TimeStopperAmmo : Ammo
+{
+inventory.amount 1
+inventory.maxamount 28
++INVENTORY.IGNORESKILL
+}
+
+actor TimeStopperGiver : CustomInventory 10043
+{
+//$Category MM8BDM-Weapons
+//$Title Time Stopper
+Inventory.Pickupmessage "$PU_TIMESTOPPER"
+inventory.pickupsound "weapon/weaponup"
+Inventory.RespawnTics 1800
+scale 2.0
+states
+{
+Spawn:
+WEAP N 1
+Loop
+Pickup:
+WEAP N 0 A_JumpIfInventory("TimeStopperWep",1,"Failure")
+WEAP N 0 A_GiveInventory("TimeStopperWep")
+stop
+Failure:
+WEAP N 1
+fail
+Death:
+TNT1 A 0
+stop
+}
+}*/

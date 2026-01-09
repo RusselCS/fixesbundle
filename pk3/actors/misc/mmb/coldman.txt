@@ -1,0 +1,278 @@
+actor ColdMet 11687
+{
+//$Category MM8BDM-Props
+-SOLID
++NOGRAVITY
++CLIENTSIDEONLY
+height 10
+radius 10
+scale 2.5
+translation "216:218=195:195"
+States
+{
+Spawn:
+METT B -1
+stop
+}
+}
+
+actor ColdYashichi 11688
+{
+//$Category MM8BDM-Yashichi
+-SOLID
+scale 2.5
+radius 4
+height 4
++NOGRAVITY
+States
+{
+Spawn:
+YASH B -1
+stop
+}
+}
+
+actor Rabbiton
+{
+//$Category MM8BDM-Props
++CLIENTSIDEONLY
++ACTIVATEMCROSS
+-NOGRAVITY
+-SOLID
+height 16
+radius 16
+Speed 5
+Scale 2.5
+States
+{
+Spawn:
+TNT1 A 0 A_CheckFloor("Skate1")
+RABT F 3 A_Recoil(-1)
+loop
+Skate1:
+RABT A 3 A_Recoil(-1)
+TNT1 A 0 A_CheckFloor("Skate2")
+goto Spawn
+Skate2:
+RABT B 3 A_Recoil(-1)
+TNT1 A 0 A_CheckFloor("Skate3")
+goto Spawn
+Skate3:
+RABT C 3 A_Recoil(-1)
+TNT1 A 0 A_CheckFloor("Skate4")
+goto Spawn
+Skate4:
+RABT D 3 A_Recoil(-1)
+TNT1 A 0 A_CheckFloor("Skate5")
+goto Spawn
+Skate5:
+RABT E 3 A_Recoil(-1)
+TNT1 A 0 A_CheckFloor("Skate6")
+goto Spawn
+Skate6:
+RABT D 3 A_Recoil(-1)
+TNT1 A 0 A_CheckFloor("Skate7")
+goto Spawn
+Skate7:
+RABT C 3 A_Recoil(-1)
+TNT1 A 0 A_CheckFloor("Skate8")
+goto Spawn
+Skate8:
+RABT B 3 A_Recoil(-1)
+goto Spawn
+}
+}
+
+actor IceMachineLauncher 11692
+{
+//$Category MM8BDM-Interactive Props
+Obituary "$OB_ICEMACHINE"
+species "IceMachine"
++SOLID
+scale 2.5
+Radius 48
+Height 80
+speed 0
+States
+{
+Spawn:
+IMAC A 1
+loop
+Launch:
+IMAC A 0 A_SpawnItemEx("IceMachineParticle", 0, 0, 96)
+IMAC A 4 A_PlaySoundEx("misc/icemachinecharge", "voice")
+IMAC BABABABAB 4 
+IMAC C 10 A_CustomMissile("IceBlock", 0, 0, 0, 2, 0)
+Goto Spawn
+Death:
+TNT1 A 0
+stop
+}
+}
+
+actor IceMachineParticle
+{
+	+NOINTERACTION
+	+NOGRAVITY
+	+CLIENTSIDEONLY
+	+FORCEXYBILLBOARD
+	-SOLID
+	scale 3.0
+	height 1
+	radius 1
+	States
+	{
+		Spawn:
+		IMAC KLMKLMKLMKLMKLMKLMKL 2
+		stop
+	}
+}
+
+actor IceBlock
+{
++SOLID
++CANPASS
++MISSILE
++DONTBLAST
++DONTREFLECT
++THRUACTORS
+Damage(15)
+Height 64
+Radius 32
+Scale 2.5
+gravity 2.0
+speed 18
+Damagetype "IceBlock"
+SelfObituary "$OB_ICEBLOCK"
++NOEXPLODEFLOOR
++THRUSPECIES
++BOUNCEONCEILINGS
+species "IceMachine"
+var int user_playerRiding[64];
+States
+{
+Spawn:
+IMAC I 0
+IMAC I 0 A_ClearTarget
+IMAC I 0 A_ChangeFlag(THRUACTORS, false)
+IMAC I 1
+IMAC I 0 ACS_NamedExecuteAlways("core_stickyLifts",0,STICKYMODE_GUTSLIFT)
+IMAC I 0 ThrustThingZ(0,0,0,1)//Resync
+IMAC I 0 ThrustThing(angle*256/360,0,1,0)//Resync
+IMAC I 1
+wait
+Death:
+TNT1 A 1 A_TakeInventory("CutterFlag", 1)
+TNT1 A 0 A_SpawnItemEx("IcePitFreeze")
+TNT1 A 1 A_SpawnItemEx("IceBlockShards",0,0,32,0,0,0,0,SXF_TRANSFERTRANSLATION)
+stop
+}
+}
+
+Actor IceBlockFlag : Once
+{
+}
+
+actor IceBlockDamager
+{
+PROJECTILE
++LOOKALLAROUND
++SKYEXPLODE
++DONTBLAST
++DONTREFLECT
+Damagetype "IceBlock"
+SelfObituary "$OB_ICEBLOCK"
+RenderStyle "NONE"
+Speed 0
+Damage (15)
+radius 32
+height 48
+scale 2.5
+States
+{
+Spawn:
+PLAY A 1
+stop
+Death:
+TNT1 A 0 A_GiveToTarget("Once", 1)
+stop
+}
+}
+
+actor IceBlockShards
+{
+PROJECTILE
++NOINTERACTION
++NONETID
+Radius 1
+Height 1
+Damage (0)
+States
+{
+Spawn:
+TNT1 AA 0 A_SpawnItemEx("IceBlockShard1",Random(-32, 32),Random(-32, 32),Random(-8, 16),random(2,8),random(2,8),random(5,10),random(0,360))
+TNT1 AA 0 A_SpawnItemEx("IceBlockShard2",Random(-32, 32),Random(-32, 32),Random(-8, 16),random(2,8),random(2,8),random(5,10),random(0,360))
+TNT1 AA 0 A_SpawnItemEx("IceBlockShard3",Random(-32, 32),Random(-32, 32),Random(-8, 16),random(2,8),random(2,8),random(5,10),random(0,360))
+TNT1 AA 0 A_SpawnItemEx("IceBlockShard4",Random(-32, 32),Random(-32, 32),Random(-8, 16),random(2,8),random(2,8),random(5,10),random(0,360))
+TNT1 AA 0 A_SpawnItemEx("IceBlockShard1",Random(-32, 32),Random(-32, 32),Random(-8, 16),random(2,8),random(2,8),random(5,10),random(0,360))
+stop
+}
+}
+
+actor IceBlockShard1
+{
+PROJECTILE
+-NOGRAVITY
+Radius 1
+Height 1
+Damage (0)
++HEXENBOUNCE
++CLIENTSIDEONLY
+BOUNCECOUNT 2
+BOUNCEFACTOR 0.5
+scale 2.5
+Speed 10
+States
+{
+Spawn:
+IMAC E 5
+TNT1 A 2
+Loop
+Death:
+TNT1 A 0
+stop
+}
+}
+
+actor IceBlockShard2 : IceBlockShard1
+{
+States
+{
+Spawn:
+IMAC F 5
+TNT1 A 2
+Loop
+}
+}
+
+actor IceBlockShard3 : IceBlockShard1
+{
+States
+{
+Spawn:
+IMAC G 5
+TNT1 A 2
+Loop
+}
+}
+
+actor IceBlockShard4 : IceBlockShard1
+{
+States
+{
+Spawn:
+IMAC H 5
+TNT1 A 2
+Loop
+}
+}

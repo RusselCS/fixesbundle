@@ -1,0 +1,365 @@
+actor FireTrap 10503
+{
+//$Category MM8BDM-Interactive Props
+//$Arg0 Start delay (in ticks)
++NOGRAVITY
+-SOLID
+Radius 4
+Height 4
+Scale 2.5
+renderstyle none
+obituary "$OB_FIRETRAP"
+States
+{
+Spawn:
+FIRT A 1 
+TNT1 A 0 A_JumpIf(Args[0] == 0, "Default")
+TNT1 A 0 A_GiveInventory("CutterFlag", Args[0])
+Goto Custom
+Default:
+FIRT A 20 A_CustomMissile("FireWave",0,0,0,2,0)
+Loop
+Custom:
+FIRT A 0
+FIRT A 0 A_CustomMissile("FireWave",0,0,0,2,0)
+Goto Waiting
+Waiting:
+FIRT A 1 A_TakeInventory("CutterFlag", 1)
+FIRT A 0 A_JumpIfInventory("CutterFlag", 1, "Waiting")
+FIRT A 0
+Goto Spawn+1
+}
+}
+
+
+
+actor FireWave
+{
+PROJECTILE
+Radius 8
+Height 50
++DONTBLAST
++ACTIVATEMCROSS
++ACTIVATEPCROSS
++DONTREFLECT
++THRUACTORS
++BRIGHT
+Damage (15)
+DamageType "FireTrap"
+SelfObituary "$OB_FIRETRAP"
+Speed 20
+scale 2.5
+States
+{
+Spawn:
+FIRT A 0
+FIRT A 1 A_ClearTarget
+FIRT A 0 A_ChangeFlag("THRUACTORS", 0)
+Wave:
+FIRT AAABBBCCC 1
+loop
+Death:
+TNT1 A 0 A_SpawnItemEx("OilPitIgnite")
+stop
+}
+}
+
+actor TackleFire
+{
+PROJECTILE
+Damage 0
++RIPPER
++BLOODLESSIMPACT
++CLIENTSIDEONLY
++DONTSPLASH
++DONTREFLECT
++BRIGHT
+scale 2.5
++DONTBLAST
+speed 20
+-SOLID
+-NOGRAVITY
+States
+{
+Spawn:
+HOTH CD 4
+loop
+}
+}
+
+actor ScrewBomber 10633
+{
+//$Category MM8BDM-Props
++CLIENTSIDEONLY
++FORCEYBILLBOARD
+height 16
+radius 16
+scale 2.5
+States
+{
+Spawn:
+SWBM A 35
+SWBM A 1 A_Jump(25,"PopUp")
+loop
+PopUp:
+SWBM BCDBCDBCD 5
+goto Spawn
+}
+}
+
+actor FirePillarSpawner 10634
+{
+//$Category MM8BDM-Interactive Props
+//$Sprite FIRPG0
+Radius 16
+scale 2.5
+Height 100
++NOGRAVITY
++FORCEYBILLBOARD
+-SOLID
++DONTBLAST
+obituary "%o was roasted over a Fire Pillar."
+States
+{
+Spawn:
+TNT1 A 1
+TNT1 A 0 A_JumpIfInventory("BossHealth5",1,"Concrete")
+TNT1 A 0 A_JumpIfInventory("FPFrozen",1,"Frozen")
+loop
+Fire:
+TNT1 A 0
+//TNT1 A 0 A_TakeFromTarget("FPFrozen", 1)
+TNT1 A 0 A_JumpIfInventory("FPFrozen",1,"Thawing")
+TNT1 A 1 A_SpawnItemEx("FirePillar",0,0,0,0)
+Goto Spawn
+Concrete:
+TNT1 A 0 A_JumpIfInventory("CutterFlag", 3, "Concrete3")
+TNT1 A 0 A_JumpIfInventory("CutterFlag", 2, "Concrete2")
+TNT1 A 0 A_JumpIfInventory("CutterFlag", 1, "Concrete1")
+TNT1 A 5
+TNT1 A 0 A_TakeInventory("BossHealth5", 1)
+Goto Spawn
+Frozen:
+TNT1 A 0 A_JumpIfInventory("CutterFlag", 3, "Frozen3")
+TNT1 A 0 A_JumpIfInventory("CutterFlag", 2, "Frozen2")
+TNT1 A 0 A_JumpIfInventory("CutterFlag", 1, "Frozen1")
+TNT1 A 5
+TNT1 A 0 A_TakeInventory("FPFrozen", 1)
+Goto Spawn
+Frozen1:
+TNT1 A 0 A_SpawnItemEx("FirePillarFrozen1",0,0,0,0)
+Goto Thawing
+Frozen2:
+TNT1 A 0 A_SpawnItemEx("FirePillarFrozen2",0,0,0,0)
+Goto Thawing
+Frozen3:
+TNT1 A 0 A_SpawnItemEx("FirePillarFrozen3",0,0,0,0)
+Goto Thawing
+Thawing:
+TNT1 A 1
+TNT1 A 0 A_JumpIfInventory("BossHealth5",1,"Thawing")
+TNT1 A 0 A_JumpIfInventory("FPFrozen",1,"Thawing")
+goto Spawn
+Concrete1:
+TNT1 A 0 A_SpawnItemEx("FirePillarConcrete1",0,0,0,0)
+Goto Thawing
+Concrete2:
+TNT1 A 0 A_SpawnItemEx("FirePillarConcrete2",0,0,0,0)
+Goto Thawing
+Concrete3:
+TNT1 A 0 A_SpawnItemEx("FirePillarConcrete3",0,0,0,0)
+Goto Thawing
+}
+}
+
+
+actor FirePillar
+{
+-MISSILE
++FORCEYBILLBOARD
+-SHOOTABLE
++NOBLOOD
++DONTBLAST
++NOTARGETSWITCH
++DONTREFLECT
++NOTAUTOAIMED
++BRIGHT
++DONTDRAIN
+scale 2.0
+height 96
+Radius 12
+mass 99999
+PainChance 256
+Damage (15)
+damagetype "FirePillar"
+SelfObituary "$OB_FIREPILLAR"
+Damagefactor "Freeze", 1.0
+damagefactor "ConcreteCase", 1.0
+States
+{
+Spawn:
+FIRP A 0 nodelay A_RearrangePointers(AAPTR_NULL, AAPTR_NULL, AAPTR_TARGET)
+FIRP ABAB 3 
+FIRP D 0 A_ChangeFlag("SHOOTABLE", 1)
+FIRP D 0 A_ChangeFlag("MISSILE", 1)
+FIRP D 0 A_TakeInventory("CutterFlag", 99, AAPTR_TRACER)
+FIRP D 0 A_GiveInventory("CutterFlag", 1, AAPTR_TRACER)
+FIRP DCDC 3 
+FIRP C 0 A_GiveInventory("CutterFlag", 1, AAPTR_TRACER)
+FIRP EFEF 3 
+FIRP F 0 A_GiveInventory("CutterFlag", 1, AAPTR_TRACER)
+FIRP HGHGHGHGHGHGHG 3 
+FIRP G 0 A_TakeInventory("CutterFlag", 1, AAPTR_TRACER)
+FIRP FEFE 3 
+FIRP G 0 A_TakeInventory("CutterFlag", 1, AAPTR_TRACER)
+FIRP CDCD 3
+FIRP G 0 A_ChangeFlag("SHOOTABLE", 0)
+FIRP G 0 A_TakeInventory("CutterFlag", 1, AAPTR_TRACER)
+FIRP BABA 3
+Goto Death
+Pain.ConcreteCase:
+FIRP A 0 A_ChangeFlag("SHOOTABLE", 0)
+FIRP A 0 A_GiveInventory("BossHealth5", 1, AAPTR_TRACER)
+FIRP A 0 A_Jump(256,"Death2")
+stop
+Pain.Freeze:
+FIRP A 0 A_ChangeFlag("SHOOTABLE", 0)
+FIRP A 0 A_GiveInventory("FPFrozen", 1, AAPTR_TRACER)
+FIRP A 0 A_Jump(256,"Death2")
+stop
+XDeath:
+Crash:
+FIRP C 0 A_ChangeFlag("SHOOTABLE", 0)
+FIRP C 0 A_ChangeFlag("SOLID", 0)
+FIRP CDCD 3
+FIRP BABA 3
+Goto Unfrozen
+Death:
+FIRP C 0 A_ChangeFlag("SHOOTABLE", 0)
+FIRP C 0 A_ChangeFlag("SOLID", 0)
+Goto Unfrozen
+Unfrozen:
+FIRP A 0 
+FIRP A 0 A_TakeInventory("FPFrozen", 1, AAPTR_TRACER)
+FIRP A 0 A_TakeInventory("BossHealth5", 1, AAPTR_TRACER)
+Death2:
+FIRP A 0
+stop
+
+}
+}
+
+actor FirePillarFrozen1 : FirePillar
+{
++SOLID
+-SHOOTABLE
+-BRIGHT
+Height 64
+Radius 16
+Translation "41:41=198:198", "217:217=4:4"
+States
+{
+Spawn:
+FIRP C 1 
+FIRP C 140 
+FIRP C 1 
+Goto DeathFrames
+DeathFrames:
+TNT1 A 0 A_SpawnItemEx("FirePillarDeath",0,0,0,0)
+TNT1 A 0 A_ChangeFlag("SHOOTABLE", 0)
+TNT1 A 0 A_ChangeFlag("SOLID", 0)
+TNT1 A 24
+goto Unfrozen
+}
+}
+
+actor FirePillarFrozen2 : FirePillarFrozen1
+{
+Height 96
+States
+{
+Spawn:
+FIRP E 1 
+FIRP E 140 
+FIRP E 1 //A_TakeFromTarget("FPFrozen", 1)
+goto DeathFrames
+}
+}
+
+actor FirePillarFrozen3 : FirePillarFrozen1
+{
+Height 128
+States
+{
+Spawn:
+FIRP H 1 
+FIRP H 140 
+FIRP H 1 //A_TakeFromTarget("FPFrozen", 1)
+goto DeathFrames
+}
+}
+
+actor FirePillarConcrete1 : FirePillar
+{
++SOLID
+-SHOOTABLE
+Height 64
+Radius 16
+Translation "41:41=95:95", "217:217=85:85"
+States
+{
+Spawn:
+FIRP C 1 
+FIRP C 140 
+FIRP C 1 
+Goto DeathFrames
+DeathFrames:
+TNT1 A 0 A_SpawnItemEx("FirePillarDeath",0,0,0,0)
+TNT1 A 0 A_ChangeFlag("SHOOTABLE", 0)
+TNT1 A 0 A_ChangeFlag("SOLID", 0)
+TNT1 A 24
+goto Unfrozen
+}
+}
+
+actor FirePillarConcrete2 : FirePillarConcrete1
+{
+Height 96
+States
+{
+Spawn:
+FIRP E 1 
+FIRP E 140 
+FIRP E 1 //A_TakeFromTarget("FPFrozen", 1)
+goto DeathFrames
+}
+}
+
+actor FirePillarConcrete3 : FirePillarConcrete1
+{
+Height 128
+States
+{
+Spawn:
+FIRP H 1 
+FIRP H 140 
+FIRP H 1 //A_TakeFromTarget("FPFrozen", 1)
+goto DeathFrames
+}
+}
+
+actor FirePillarDeath : FirePillar
+{
+-SHOOTABLE
+Height 128
+States
+{
+Spawn:
+FIRP C 0 
+FIRP CDCD 3
+FIRP BABA 3
+Stop
+}
+}
+
+actor FPFrozen : Once {}

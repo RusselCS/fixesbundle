@@ -1,0 +1,472 @@
+// $MISC This file is by Celebi. Unless otherwise noted, Russel has not touched the below comments.
+
+//Because core replaces Zand menus, new options get replaced
+//This adds them back
+//Ordered the same way its found in "MM8BDM-v6b"
+//$$ will note what changed
+
+
+OptionMenu "8BDM_Multiplayer"
+{
+
+	Title "MULTIPLAYER"
+
+	SubMenu		"Offline Skirmish",			"8BDM_Skirmish"
+	SubMenu		"Player Setup",				"8BDM_PlayerMenu"
+	SubMenu		"Log in",					"ZA_LoginMenu"
+	IfOption( Windows )                                                 // $MISC
+	{                                                                   // $MISC
+		Option	"Auto-login",			"cl_autologin",			"YesNo" // $MISC
+	}                                                                   // $MISC
+	StaticText	" "
+	SubMenu		"Server Administration",	"ZA_ServerSetupMenu"
+	StaticText	" "
+	Command		"Spectate",					"menu_spectate"
+	Command		"Switch teams",				"menu_changeteam"
+	Command		"Disconnect",				"menu_disconnect"
+	StaticText	" "
+	SubMenu		"Call a vote",				"ZA_CallVote"
+	SubMenu		"Player list",				"ZA_PlayerListMenu"//$$ Ignore menu is now this
+	StaticText	" "
+	SubMenu 	"Customize team colors",	"8BDM_ColorOptions"
+	StaticText 	" "
+	StaticText	"Passwords", 1
+	TextField	"Connect To Server",		"cl_password"
+	TextField	"Join Game",				"cl_joinpassword"
+	StaticText 	" "
+}
+
+OptionMenu ZA_ServerSetupMenu
+{
+	RequiresRconAccess
+	Title		"SERVER SETTINGS"
+	Indent 150
+
+	Submenu		"Voting Setup",				"ZA_VotingSetupMenu"
+	Submenu		"Gameplay Settings",		"8BDM_GameplayModifiers"
+	Command		"Log out of RCON",			"rcon_logout"//$$ New
+	StaticText	" "
+	NumberField	"Time Limit",				"timelimit"
+	NumberField	"Frag Limit",				"fraglimit"
+	NumberField	"Point Limit",				"pointlimit"
+	NumberField	"Duel Limit",				"duellimit"
+	NumberField	"Win Limit",				"winlimit"
+	StaticText 	" "
+	TextField	"Server name",				"sv_hostname"
+	TextField	"Website",					"sv_website"
+	TextField	"Contact address",			"sv_hostemail"
+	StaticText	" "
+	Option		"Use connect password",		"sv_forcepassword",			"YesNo"
+	TextField	"Connect password",			"sv_password",				"sv_forcepassword"
+	Option		"Use join password",		"sv_forcejoinpassword",		"YesNo"
+	TextField	"Join password",			"sv_joinpassword",			"sv_forcejoinpassword"
+	Option		"Require login to join",	"sv_forcelogintojoin",		"YesNo"
+	StaticText	" "
+	Option		"Allow private chat",		"sv_allowprivatechat",		"ZA_AllowPrivateChat"
+	Option		"Allow voice chat",		"sv_allowvoicechat",			"ZA_AllowVoiceChat"//$$ New
+	Option		"Use proximity chat",		"sv_proximityvoicechat",		"YesNo"//$$ New
+	Slider		"Min rolloff distance",		"sv_minproximityrolloffdist",		0, 2400, 50//$$ New
+	Slider		"Max rolloff distance",		"sv_maxproximityrolloffdist",		0, 2400, 50//$$ New
+	StaticText	" "
+	NumberField	"Max connected clients",	"sv_maxclients",			0, 64
+	NumberField	"Max players",				"sv_maxplayers",			0, 64
+	NumberField	"Max idle time (minutes)",	"sv_afk2spec",				0, 30
+	StaticText	" "
+}
+
+OptionMenu "CustomizeControls"
+{
+	Title "CUSTOMIZE CONTROLS"
+
+	ScrollTop 2
+	StaticTextSwitchable 	"ENTER to change, BACKSPACE to clear", "Press new key for control, ESC to cancel", "ControlMessage"
+	StaticText 	""
+	Submenu "Mouse Settings", 			"8BDM_MouseSettings"
+	Submenu "Controller Settings", 		"JoystickOptions"
+	StaticText 	""
+	IfOption(Windows)
+	{
+		Option "Merge Alt/Ctrl/Shift", 	"k_mergekeys", 				"OnOff"
+		Option "Alt+Enter Fullscreen",	"k_allowfullscreentoggle", 	"OnOff"
+	}
+	Option		"Respawn on Fire",		"cl_respawnonfire",			"YesNo"
+	StaticText 	""
+	StaticText 	"Movement", 1
+	Control 	"Move forward",			"+forward"
+	Control 	"Move backward",		"+back"
+	Control 	"Move left",			"+moveleft"
+	Control 	"Move right",			"+moveright"
+	Control 	"Jump",					"+jump"
+	Control		"Run / Sneak",			"+speed"
+	Control		"Toggle Run",			"toggle cl_run"
+	StaticText " "
+	Control 	"Fly Up",				"+moveup"
+	Control 	"Fly Down",				"+movedown"
+	Control 	"Crouch",				"+crouch"
+	Control 	"Toggle Crouch",		"crouch"
+	Control 	"Respawn / Open",		"+use"
+	Control 	"Center view",			"centerview"
+	
+	StaticText 	""
+	StaticText 	"Weapons", 1
+	Control 	"Primary Fire",			"+attack"
+	Control 	"Alternate Fire",		"+altattack"
+	Control 	"Next weapon",			"weapnext"
+	Control 	"Previous weapon",		"weapprev"
+	Control 	"Last used weapon",		"swapweap"
+	StaticText " "
+	Control		"Weapon Slot 1",		"slot 1"
+	Control		"Weapon Slot 2",		"slot 2"
+	Control		"Weapon Slot 3",		"slot 3"
+	Control		"Weapon Slot 4",		"slot 4"
+	Control		"Weapon Slot 5",		"slot 5"
+	Control		"Weapon Slot 6",		"slot 6"
+	Control		"Weapon Slot 7",		"slot 7"
+	Control		"Weapon Slot 8",		"slot 8"
+	Control		"Weapon Slot 9",		"slot 9"
+	Control		"Weapon Slot 0",		"slot 0"
+
+	StaticText 	""
+	StaticText 	"Assist Items", 1
+	Control 	"Use Item",				"invuse"
+	Control 	"Use All Items",		"invuseall"
+	Control 	"Next Item",			"invnext"
+	Control 	"Previous Item",		"invprev"
+	
+	StaticText 	""
+	StaticText 	"Multiplayer", 1
+	Control 	"Chat",					"messagemode"
+	Control 	"Team Chat",			"messagemode2"
+	Control		"Private Chat",			"messagemode3"
+	Control		"Voice chat",			"+voicerecord"//$$ New
+	Control		"Taunt",				"taunt"
+	Control  	"Open Console",			"toggleconsole"
+	StaticText 	""
+	Option		"Join Game (KBM)",		"joinmenukey", "JoinMenuKeys"
+	Control		"Join Game (C)", 		"menu_join"
+	Control		"Spectate",				"spectate" 
+	Control 	"Spy Players",			"spynext"
+	Control		"Spy Flag Carrier",     "spycarrier"
+	Control 	"Stop Spying",			"spycancel"
+	StaticText 	""
+	Control		"Vote Yes",				"vote_yes"
+	Control		"Vote No",				"vote_no"
+
+	StaticText 	""
+	StaticText 	"Interface", 1
+	Control 	"Show Scoreboard",		"+showscores"
+	Control		"Scroll scoreboard up",		"+sb_scrollup"//$$ New, unsure if core would add
+	Control		"Scroll scoreboard down",	"+sb_scrolldn"//$$ New, unsure if core would add
+	Control 	"Chasecam",				"chase"
+	Control 	"Screenshot",			"screenshot"
+	Control		"Display Map Card",		"mapcard"
+
+	StaticText 	""
+	StaticText  "Automap", 1
+	Control 	"Toggle automap",		"togglemap"
+	MapControl 	"Pan left",				"+am_panleft"
+	MapControl 	"Pan right",			"+am_panright"
+	MapControl 	"Pan up",				"+am_panup"
+	MapControl 	"Pan down",				"+am_pandown"
+	MapControl 	"Zoom in",				"+am_zoomin"
+	MapControl 	"Zoom out",				"+am_zoomout"
+	MapControl 	"Toggle zoom",			"am_gobig"
+	MapControl 	"Toggle follow",		"am_togglefollow"
+	MapControl 	"Toggle grid",			"am_togglegrid"
+	MapControl 	"Toggle texture",		"am_toggletexture"
+	MapControl 	"Set mark",				"am_setmark"
+	MapControl 	"Clear mark",			"am_clearmarks"
+
+	StaticText 	""
+	StaticText 	"Mod Controls", 1
+	Control 	"$MENU_RELOAD",			"+reload"
+	Control 	"$MENU_ZOOM",			"+zoom"
+	Control 	"$MENU_USER1",			"+user1"
+	Control 	"$MENU_USER2",			"+user2"
+	Control 	"$MENU_USER3",			"+user3"
+	Control 	"$MENU_USER4",			"+user4"
+	//StaticText	" "
+	//New key sections get added here with filler room already
+}
+
+OptionMenu "8BDM_AudioSettings"
+{
+	Title "AUDIO SETTINGS"
+
+	Slider "Sound volume",					"snd_sfxvolume", 					0, 1, 0.05
+	Slider "Menu volume",					"snd_menuvolume", 					0, 1, 0.05
+	Slider "Music volume",					"snd_musicvolume", 					0, 1, 0.05
+	StaticText " "
+	Option "Speaker mode",					"snd_speakermode", 					"SpeakerModes"
+	Option "Use HRTF",						"snd_hrtf", 						"OnOff"
+	StaticText " "
+	Option "Hit/Frag Confirm Sounds",		"mm8bdm_hitconfirm", 				"8BDM_OffOnFrag"
+	Slider "Hit/Frag Confirm Volume",		"mm8bdm_hitconfirmvolume", 			0.0, 1.0, .1
+	Slider "Hit/Frag Confirm Buffer",		"mm8bdm_hitconfirmbuffer", 			1, 10, 1, 0
+	StaticText " "
+	StaticText "Objective Sounds", 1
+	Option "Objective Event Sounds",		"mm8bdm_objectivesound", 			"OnOff"
+	Slider "Objective Event Volume",		"mm8bdm_objectivesoundvolume", 		0.0, 1.0, .1
+	StaticText " "
+	Option "Announcer Sounds",				"cl_announcer", 					"ZA_Announcers" 
+	Slider "Announcer Volume",				"snd_announcervolume", 				0, 1, 0.05 
+	Option "Allow announcer overlap", 		"cl_allowmultipleannouncersounds", 	"YesNo" 
+	StaticText " "
+	StaticText "Social Sounds", 1
+	Option "Play connect sound", 			"cl_connectsound", 					"YesNo"
+	Option "Chat sound",					"chat_sound", 						"8BDM_ChatSound"
+	Option "Private chat sound",			"privatechat_sound", 				"8BDM_ChatSound"
+	Submenu "Voice chat options",			"ZA_VoiceChatOptions"//$$ New
+	StaticText " "
+	StaticText	"Music Preferences", 1
+	Option "Tengu Man Stage",				"mm8bdm_music_tenguman", 			"8BDM_MM8Music"
+	Option "Enker Stage",					"mm8bdm_music_enker", 				"8BDM_MM10Music"
+	Option "Punk Stage",					"mm8bdm_music_punk", 				"8BDM_MM10Music"
+	Option "Ballade Stage",					"mm8bdm_music_ballade", 			"8BDM_MM10Music"
+	StaticText " "
+	Command "Restart sound",				"snd_reset"
+	StaticText " "
+}
+
+OptionMenu "8BDM_UISettings"
+{
+	Title "UI SETTINGS"
+	
+	Submenu "Customize Crosshair", "8BDM_CrosshairSettings"
+	Submenu "HUD Settings", "8BDM_HUDSettings"
+	Submenu "Automap Settings", "8BDM_AutomapSettings"
+	Submenu "Message Settings", "8BDM_MessageSettings"
+	Submenu "Scoreboard Settings", "ScoreboardOptions"//$$ Added to core's menu
+	
+	StaticText " "
+	Option "Weapon Redirect Sights",		"mm8bdm_redirectsights", 	"OnOff"
+	Option "Show weapon sprites",			"r_drawplayersprites", 		"YesNo"
+	Option "Show player spawns",			"cl_showspawns",			"YesNo"
+	Option "Show item respawn timers",		"mm8bdm_showitemrespawns", 	"YesNo"
+	StaticText " "
+	Option "Show tag on swap",				"displaynametags", 			"DisplayTagsTypes"
+	Option "Show teammate info",			"cl_drawcoopinfo", 			"YesNo"
+	Option "Show spectating indicator",		"r_drawspectatingstring",	"YesNo"
+	Option "Identify players",				"cl_identifytarget",		"ZA_IdentifyTargetLevels"
+	Option "Show LMS weapon loadout",		"mm8bdm_drawlmsweapons", 	"YesNo"
+	Option "Objective Compass",				"mm8bdm_noctfradar", 		"OffOn"
+	StaticText " "
+	Option "Large frag messages",			"cl_showlargefragmessages",	"OnOff" 
+	Option "Voting display",				"cl_showfullscreenvote", 	"ZA_VotingDisplay"
+	Option "Hide vote screen after vote",	"cl_hidevotescreen", 		"YesNo"
+	Option "Show map cards",				"mm8bdm_mapcards", 			"8BDM_MapCards"
+	StaticText " "
+	Option "Show intermission timer",		"cl_intermissiontimer",		"YesNo"
+	Option "Intermission auto-ready",		"cl_autoready",				"OnOff"
+	StaticText " "
+}
+
+OptionMenu "8BDM_MultiplayerSettings"
+{
+	Title "MULTIPLAYER SETTINGS"
+
+	Option		"Start as spectator",		"cl_startasspectator",		"YesNo"
+	Option		"Reset frags at join",		"cl_dontrestorefrags",		"YesNo"
+	Option		"Hide country",				"cl_hidecountry",			"YesNo"
+
+	StaticText	" "
+	TextField 	"Chat prefix",				"cl_chatprefix"
+	TextField 	"Chat suffix",				"cl_chatsuffix"
+	Option 		"Chat substitution",		"chat_substitution",		"OnOff"
+
+	StaticText	" "
+	Option		"Skins",					"cl_skins",					"ZA_AllowSkins"
+	Option		"Taunts",					"cl_taunts",				"OnOff"
+	Option		"Status icons",				"cl_icons",					"OnOff"
+
+	StaticText	" "
+	Option		"Teleport to spied player",	"cl_telespy",				"YesNo"
+	Option		"Spectator mode",		"cl_spectatormode",			"ZA_SpectatorMode"//$$ New
+	Slider		"Spectator move speed",		"cl_spectatormove",			0.1, 5.0, 0.1
+	StaticText	" "
+}
+
+///////////////////////////////////////////////////////////////
+////Zand version 3.2-241029-2139, updated menus core replaces//
+///////////////////////////////////////////////////////////////
+
+OptionMenu ZA_MultiplayerOptions
+{
+	Title "MULTIPLAYER OPTIONS"
+
+	SubMenu		"Offline Skirmish",		"ZA_SkirmishMenu"
+	SubMenu		"Browse servers",		"ZA_Browser"
+	StaticText	" "
+	SubMenu		"Log in",			"ZA_LoginMenu"
+	StaticText	" "
+	SubMenu		"Player list",			"ZA_PlayerListMenu"
+	SubMenu		"Call a vote",			"ZA_CallVote"
+	StaticText	" "
+	Command		"Spectate",			"menu_spectate"
+	Command		"Switch teams",			"menu_changeteam"
+	Command		"Disconnect",			"menu_disconnect"
+	StaticText	" "
+	SubMenu		"Network Options",		"ZA_NetworkOptions"
+	Submenu		"Server settings",		"ZA_ServerSetupMenu"
+	StaticText	" "
+
+	// [AK] cl_autologin only exists in Windows.
+	IfOption( Windows )
+	{
+		Option	"Auto-login",			"cl_autologin",			"YesNo"
+	}
+
+	Option		"Start as spectator",		"cl_startasspectator",		"YesNo"
+	TextField	"Server password",		"cl_password"
+	TextField	"Server join password",		"cl_joinpassword"
+	Option		"Reset frags at join",		"cl_dontrestorefrags",		"YesNo"
+	Option		"Hide country",			"cl_hidecountry",		"YesNo"
+	Option		"Respawn using attack key",	"cl_respawnonfire",		"YesNo"
+	Option		"Intermission auto-ready",	"cl_autoready",			"YesNo"
+	StaticText	" "
+	Option		"Skins",			"cl_skins",			"ZA_AllowSkins"
+	Option		"Taunts",			"cl_taunts",			"OnOff"
+	Option		"Icons",			"cl_icons",			"OnOff"
+	Option		"Show ally icon",		"cl_showallyicon",		"ZA_ShowIcons",			"cl_icons"
+	Option		"Show enemy icon",		"cl_showenemyicon",		"ZA_ShowIcons",			"cl_icons"
+	Option		"Identify player level",	"cl_identifytarget",		"ZA_IdentifyTargetLevels"
+	Option		"Identify monster level",	"cl_identifymonsters",		"ZA_IdentifyMonsterLevels"
+	Option		"Show spawn spots",		"cl_showspawns",		"YesNo"
+	Option		"Free chasecam",		"cl_freechase",			"YesNo"
+	Option		"Teleport to spied player",	"cl_telespy",			"YesNo"
+	Option		"Spectator mode",		"cl_spectatormode",		"ZA_SpectatorMode"
+	Slider		"Spectator move speed",		"cl_spectatormove",		0.1, 5.0, 0.1
+	StaticText	" "
+	Option		"Override player colors",	"cl_overrideplayercolors",	"ZA_OverridePlayerColors"
+	ColorPicker	"Ally color",			"cl_allycolor"
+	ColorPicker	"Enemy color",			"cl_enemycolor"
+}
+
+
+OptionMenu ZA_LegacyServerSetupMenu
+{
+	RequiresRconAccess
+	Title		"SERVER SETTINGS"
+	Indent 150
+
+	Submenu		"Voting setup",				"ZA_VotingSetupMenu"
+	Submenu		"Gameplay Options",			"GameplayOptions"
+	Submenu		"Compatibility Options",	"CompatibilityOptions"
+	Command		"Log out of RCON",			"rcon_logout"
+	StaticText	" "
+	TextField	"Server name",				"sv_hostname"
+	TextField	"Website",					"sv_website"
+	TextField	"Contact address",			"sv_hostemail"
+	StaticText	" "
+	Option		"Use connect password",		"sv_forcepassword",			"YesNo"
+	TextField	"Connect password",			"sv_password",				"sv_forcepassword"
+	Option		"Use join password",		"sv_forcejoinpassword",		"YesNo"
+	TextField	"Join password",			"sv_joinpassword",			"sv_forcejoinpassword"
+	Option		"Require login to join",	"sv_forcelogintojoin",		"YesNo"
+	StaticText	" "
+	Option		"Allow private chat",		"sv_allowprivatechat",			"ZA_AllowPrivateChat"
+	Option		"Allow voice chat",		"sv_allowvoicechat",			"ZA_AllowVoiceChat"
+	Option		"Use proximity chat",		"sv_proximityvoicechat",		"YesNo"
+	Slider		"Min rolloff distance",		"sv_minproximityrolloffdist",		0, 2400, 50
+	Slider		"Max rolloff distance",		"sv_maxproximityrolloffdist",		0, 2400, 50
+	StaticText	" "
+	// Option	"Smooth lagging players",	"sv_smoothplayers",			"ZA_ExtrapolateLimit"
+	NumberField	"Max connected clients",	"sv_maxclients",			0, 64
+	NumberField	"Max players",				"sv_maxplayers",			0, 64
+	NumberField	"Max idle time (minutes)",	"sv_afk2spec",				0, 30
+}
+
+
+
+
+
+OptionMenu "ZA_CustomizeControls"
+{
+	Title "CUSTOMIZE CONTROLS"
+	ScrollTop 2
+	StaticTextSwitchable 	"ENTER to change, BACKSPACE to clear", "Press new key for control, ESC to cancel", "ControlMessage"
+	StaticText 	""
+	StaticText 	"Controls", 1
+	Control 	"Fire",					"+attack"
+	Control 	"Secondary Fire",		"+altattack"
+	Control 	"Weapon Reload",			"+reload"
+	Control 	"Weapon Zoom",				"+zoom"
+	Control 	"Use / Open",			"+use"
+	Control 	"Move forward",			"+forward"
+	Control 	"Move backward",		"+back"
+	Control 	"Strafe left",			"+moveleft"
+	Control 	"Strafe right",			"+moveright"
+	Control 	"Turn left",			"+left"
+	Control 	"Turn right",			"+right"
+	Control 	"Jump",					"+jump"
+	Control 	"Crouch",				"+crouch"
+	Control 	"Crouch Toggle",		"crouch"
+	Control 	"Fly / Swim up",		"+moveup"
+	Control 	"Fly / Swim down",		"+movedown"
+	Control 	"Stop flying",			"land"
+	Control 	"Mouse look",			"+mlook"
+	Control 	"Keyboard look",		"+klook"
+	Control 	"Look up",				"+lookup"
+	Control 	"Look down",			"+lookdown"
+	Control 	"Center view",			"centerview"
+	Control 	"Run",					"+speed"
+	Control 	"Strafe",				"+strafe"
+	Control 	"Show Scoreboard",		"+showscores"
+	Control		"Scroll scoreboard up",		"+sb_scrollup" // [AK]
+	Control		"Scroll scoreboard down",	"+sb_scrolldn" // [AK]
+	StaticText 	""
+	StaticText 	"Chat", 1
+	Control 	"Say",					"messagemode"
+	Control 	"Team say",				"messagemode2"
+	Control		"Private say",				"messagemode3" // [AK]
+	Control		"Voice chat",				"+voicerecord" // [AK]
+	StaticText 	""
+	StaticText 	"Weapons", 1
+	Control 	"Next weapon",			"weapnext"
+	Control 	"Previous weapon",		"weapprev"
+	Control		"Swap weapon", 			"weapswap" // [AK]
+	Control		"Weapon Slot 1",		"slot 1"
+	Control		"Weapon Slot 2",		"slot 2"
+	Control		"Weapon Slot 3",		"slot 3"
+	Control		"Weapon Slot 4",		"slot 4"
+	Control		"Weapon Slot 5",		"slot 5"
+	Control		"Weapon Slot 6",		"slot 6"
+	Control		"Weapon Slot 7",		"slot 7"
+	Control		"Weapon Slot 8",		"slot 8"
+	Control		"Weapon Slot 9",		"slot 9"
+	Control		"Weapon Slot 0",		"slot 0"
+	StaticText 	""
+	StaticText 	"Inventory", 1
+	Control 	"Activate item",		"invuse"
+	Control 	"Activate all items",	"invuseall"
+	Control 	"Next item",			"invnext"
+	Control 	"Previous item",		"invprev"
+	Control 	"Drop item",			"invdrop"
+	Control		"Query item",			"invquery"
+	Control 	"Drop weapon",			"weapdrop"
+	// [TP] Voting controls
+	StaticText 	""
+	StaticText 	"Voting", 1
+	Control		"Vote yes",				"vote_yes"
+	Control		"Vote no",				"vote_no"
+	// [TP] --
+	StaticText 	""
+	StaticText 	"Other", 1
+	Control 	"Toggle automap",		"togglemap"
+	Control 	"Chasecam",				"chase"
+	Control 	"Coop spy",				"spynext"
+	Control		"Item carrier spy",			"spycarrier" // [AK]
+	Control 	"Screenshot",			"screenshot"
+	Control		"Spectate",				"spectate" // [TP]
+	Control		"Switch teams",				"changeteam" // [AK]
+	Control		"Taunt",				"taunt" // [TP]
+	Option		"Join the game",		"joinmenukey", "JoinMenuKeys" // [TP]
+	Control		"Join the game (custom)", "menu_join" // [TP]
+	Control  	"Open console",			"toggleconsole"
+	StaticText 	""
+	StaticText 	"Strife Popup Screens", 1
+	Control 	"Mission objectives",	"showpop 1"
+	Control 	"Keys list",			"showpop 2"
+	Control 	"Weapons/ammo/stats",	"showpop 3"
+}
+

@@ -1,0 +1,76 @@
+actor Spring 10608
+{
+//$Category MM8BDM-Props
+height 1
+radius 1
+-SOLID
+scale 2.5
++NOINTERACTION
++NOGRAVITY
+States
+{
+Spawn:
+SPRI A -1
+stop
+}
+}
+
+actor WallSpring 11661
+{
+//$Category MM8BDM-Props
+height 1
+radius 1
+-SOLID
+scale 2.5
++NOINTERACTION
++NOGRAVITY
+States
+{
+Spawn:
+WSPR A -1
+stop
+}
+}
+
+actor SpringBoxTrap
+{
++MISSILE
++RIPPER
++NOGRAVITY
++DONTBLAST
++THRUGHOST
++FORCEYBILLBOARD
++DONTREFLECT
+Damage (0)
+damagetype "SpringBoxTrap"
+SelfObituary "$OB_SPRINGBOXTRAP"
+Scale 2.5
+Radius 32
+Height 128
+States
+{
+Spawn:
+SBOX A 0 nodelay A_ClearTarget
+SBOX A 2 A_SpawnItemEx("SpringBoxExplode", 0, 0, 16)
+SBOX BC 2
+SBOX D 5 A_SpawnItemEx("SpringBoxExplode", 0, 0, 32)
+SBOX E 5 A_SpawnItemEx("SpringBoxExplode", 0, 0, 48)
+SBOX D 20
+SBOX CBA 2 
+stop
+}
+}
+
+actor SpringBoxExplode : SpringBoxTrap
+{
++NOINTERACTION
+SelfObituary "$OB_SPRINGBOXTRAP"
+States
+{
+Spawn:
+SBOX A 0 nodelay A_ClearTarget
+TNT1 A 0 A_Explode(5, 5, 0, 0, 5)
+TNT1 A 0
+stop
+}
+}

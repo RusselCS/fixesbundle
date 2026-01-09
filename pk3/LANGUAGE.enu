@@ -1,0 +1,33 @@
+[enu default]
+
+OB_FIRETRAP = "%o missed the timing of a fire trap.";
+OB_FIREPILLAR = "%o was roasted over a fire pillar.";
+OB_BIGEYE = "%o was squished by a Big Eye.";
+OB_OILBARREL = "%o went boom with an Oil Canister.";
+OB_OILBARRELRESPAWN = "%o was defeated by a respawning actor.";
+OB_CHILLCUBERESPAWN = "%o was frozen in an ice cube.";
+OB_NITROTRUCK = "%o stood in traffic.";
+OB_SHEEPBLOCKRESPAWN = "%o was defragmented.";
+OB_SOLARCHANGKEY = "%o was sunburnt by a changkey.";
+OB_SPINEY = "%o was perforated by spikes.";
+OB_METALPRESS = "%o was squished by a Metal Press.";
+OB_QUICKBEAM = "%o was not quick enough to avoid the beams.";
+OB_METOOLSWIMMER = "%o was struck by a metool swimmer.";
+OB_PRESSBALL = "%o was crushed by a Press Ball.";
+OB_JUNKMANDUSTCRUSHER = "%o was munched by a Dust Crusher.";
+OB_SPRINGBOXTRAP = "%o was punched out by a spring box.";
+OB_KINGGAJURAS = "%o was stomped on by King Gajuras.";
+OB_KYOROWNBULLET = "%o was Kyorowned by a Kyorown.";
+OB_GHOSTSNGOBLINSTHING = "%o was kidnapped by demons.";
+OB_TURBOROADER = "%o was run over by a Turbo Roader.";
+OB_CLOWNTRAIN = "%o was run over by a Clown Train.";
+OB_COUNTBOMB = "%o clocked out on a count bomb.";
+OB_COUNTBOMBRESPAWN = "%o was defeated by a respawning actor.";
+OB_MAGMABEAM = "%o was dissolved in a stream of magma.";
+OB_CHANGKEYDRAGON = "%o was overcooked by a Changkey Dragon.";
+OB_BURNWAVE = "%o did not prevent the wildfire.";
+OB_ICEBLOCK = "%o was hit by an ice block.";
+OB_PIRATEMINE = "%o was sunk by a pirate mine.";
+OB_MARSMINE = "%o was gibbed by a Mars Mine.";
+OB_MARSROCKET = "%o blasted off with a Mars Rocket.";
+OB_FIRESNAKEY = "%o was eaten by a Fire Snakey.";

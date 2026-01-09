@@ -1,0 +1,82 @@
+actor QuickBeam
+{
+PROJECTILE
+Damage (255)
++RIPPER
+damagetype "Beam"
+SelfObituary "$OB_QUICKBEAM"
+scale 2.5
++DONTBLAST
++FORCEXYBILLBOARD
++FOILINVUL
++DONTREFLECT
++THRUACTORS
++BRIGHT
+radius 32
+height 42
+obituary "%k was not quick enough to avoid the beams."
+Speed 32
+States
+{
+Spawn:
+QBEA A 0
+QBEA A 1 A_ClearTarget
+QBEA A 0 A_ChangeFlag("THRUACTORS", 0)
+Beam:
+QBEA A -1
+loop
+}
+}
+
+actor NoLagQuickBeam : QuickBeam
+{
+damage (0)
++FORCEXYBILLBOARD
++BLOODLESSIMPACT
++CLIENTSIDEONLY
+//renderstyle none
+States
+{
+Spawn:
+QBEA A 10
+loop
+}
+}
+
+actor QuickBeamShooter 10507
+{
+//$Category MM8BDM-Interactive Props
+//$Sprite AMMOA0
++NOGRAVITY
+-SOLID
+obituary "%k was not quick enough to avoid the beams."
+States
+{
+Spawn:
+TNT1 A 1 
+loop
+Fire:
+TNT1 A 1
+TNT1 A 0 A_CustomMissile("QuickBeam",0,0,0,2,0)
+TNT1 AAAAAAAAA 1 A_CustomMissile("NoLagQuickBeam",0,0,0,2,0)
+Goto Fire+1
+}
+}
+
+actor HotHead 10532
+{
+//$Category MM8BDM-Props
+-SOLID
++ALLOWCLIENTSPAWN
+height 32
+radius 48
+scale 2.5
++RANDOMIZE
++BRIGHT
+States
+{
+Spawn:
+HOTH AB 9
+loop
+}
+}

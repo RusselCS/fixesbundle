@@ -1,0 +1,34 @@
+#library "BTSPAWNS"
+#include "zcommon.acs"
+
+
+script "BTLMS_ENTER" ENTER // invulnerability script
+{
+	Delay(1);
+	
+	if(GetCVar("BTLMS_InvulnBlast"))
+		GiveInventory("LMSRepulsion", 1);
+}
+
+script "BTLMS_RESPAWN" RESPAWN // Calls the previous script on respawn
+{
+	ACS_NamedExecuteAlways("BTLMS_ENTER", 0);
+}
+
+script "BTLMS_TEAMSPAWNS" OPEN
+{
+	if(GetCVar("BTLMS_OverrideTeamStarts"))
+	{
+		ConsoleCommand("sv_useteamstartsindm true");
+		Delay(5*35);
+		if(GetGameModeState()==GAMESTATE_INPROGRESS)
+		{
+			ConsoleCommand("sv_useteamstartsindm false");
+		}
+		while(GetGameModeState()==GAMESTATE_INPROGRESS)
+		{
+			Delay(1);
+		}
+		ConsoleCommand("sv_useteamstartsindm true");
+	}
+}

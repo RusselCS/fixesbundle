@@ -1,0 +1,217 @@
+actor TenguBladeWep_NormalBar : NormalBar { args 208, 93 }
+actor TenguBladeWep_ScriptBar : ScriptBar {}
+
+actor TenguBladeWep : BaseMM8BDMWep 10012
+{
+//$Category MM8BDM-Weapons/Close
+//$Title Tengu Blade
+//$Sprite TBLAX0
+Weapon.AmmoUse 2
+Weapon.AmmoGive 28
+Weapon.SlotNumber 4
+Inventory.Pickupmessage "$PU_TENGUBLADE"
+Obituary "$OB_TENGUBLADE"
+Tag "$TAG_TENGUBLADE"
+weapon.ammotype "TenguBladeAmmo"
+inventory.icon "TENBLI"
+States
+{
+SpawnLoop:
+TBLA X -1
+loop
+Ready:
+TENA A 0 ACS_NamedExecuteWithResult("core_weaponcolor",CLR_TENGUBLADE)
+TENA A 1 A_WeaponReady
+Goto Ready+1
+Deselect:
+TENA A 0
+goto DeselectSwap
+Select:
+TENA A 0
+goto SelectSwap
+Fire:
+Hold:
+TENA A 0 A_JumpIfNoAmmo("NoAmmo")
+TENA A 0 A_JumpIfInventory("WeaponCharge", 25, "Charge2")
+TENA A 0 A_JumpIfInventory("WeaponCharge", 15, "Charge")
+TENA A 1 A_GiveInventory("WeaponCharge", 1 + CallACS("core_checkrune", RUNE_RAGE))
+TENA A 0 A_Refire
+Goto Fire1
+Charge:
+TENA B 0 A_JumpIfInventory("WeaponCharge", 25, "Charge2")
+TENA B 1 A_GiveInventory("WeaponCharge", 1 + CallACS("core_checkrune", RUNE_RAGE))
+TENA B 0 A_Refire
+Goto Fire1
+Charge2:
+TENA C 1 A_JumpIfInventory("IsBot", 1, "BotCharge")
+TENA C 0 A_Refire
+TENA C 0 A_JumpIf(CallACS("core_CheckFooting"),"DashStart")
+Goto Fire1
+BotCharge:
+TENA C 1 A_Jump(64, "Fire1")
+TENA C 0 A_Jump(32, 2)
+TENA C 0 A_Refire
+Goto Charge2+2
+DashStart:
+TENA C 1 ACS_NamedExecuteWithResult("core_unsolidplayer",0,USP_TOGGLEON) // $WeapFixes
+TENA E 0 A_GiveInventory("CutterFlag", 10)
+TENA A 0 A_GiveInventory("TakeTenguBladeAmmo",1) //sync >_>
+TENA A 0 A_TakeInventory("WeaponCharge", 999)
+TENA E 0 A_Recoil(-50)
+TENA E 0 A_PlaySoundEx("weapons/mmb/tengubladedash","Weapon")
+TENA E 0 ACS_NamedExecuteWithResult("core_freezeplayer",0,1) // $WeapFixes
+Goto DashAttack
+DashAttack:
+TENA E 0 A_Recoil(-1)
+TENA E 1 A_SpawnItemEx("TenguDash", 48, 0, 32, momx, momy, momz, 0, SXF_ABSOLUTEMOMENTUM) //A_FireCustomMissile("TenguDash",0,0,11,-8)
+TENA E 0 A_TakeInventory("CutterFlag", 1)
+TENA E 0 A_JumpIfInventory("CutterFlag", 1, "DashAttack")
+DashFinish:
+TENA E 0 ACS_NamedExecuteWithResult("core_freezeplayer",0,0) // $WeapFixes
+TENA E 0 ACS_NamedExecuteWithResult("core_unsolidplayer",0,USP_TOGGLEOFF_DAMAGE,ACS_NamedExecuteWithResult("core_getmaxhealth")/10) // $WeapFixes
+TENA E 0 A_ScaleVelocity(0.25)
+TENA FG 2
+TNT1 A 8 A_TakeInventory("WeaponCharge", 999)
+TENA CBA 2
+TENA A 0 A_Refire
+Goto Ready+1
+Altfire:
+Fire1:
+TENA A 0 A_JumpIfNoAmmo("NoAmmo")
+TENA A 0 A_PlaySoundEx("weapons/mmb/tengubladefire","Weapon")
+TENA A 0 A_TakeInventory("WeaponCharge", 999)
+TENA B 1 A_GiveInventory("FireTenguSlash1", 1) // SpreadRune
+TENA C 1
+TENA D 2 
+TENA E 2 A_GiveInventory("FireTenguSlash2", 1) // SpreadRune
+TENA F 2
+TENA G 2 A_FireCustomMissile("TenguBlade",0,1,8,0)
+TNT1 A 8 A_TakeInventory("WeaponCharge", 999)
+TENA CBA 2
+TENA A 1 A_Refire
+Goto Ready+1
+NoAmmo:
+TENA A 1 ACS_NamedExecuteAlways("core_noammo",0)
+Goto Ready+1
+}
+}
+
+actor TenguBladeAmmo : Ammo
+{
+inventory.amount 1
+inventory.maxamount 28
++INVENTORY.IGNORESKILL
+}
+
+actor FireTenguSlash1 : CustomInventory
+{
+    States
+    {
+    Pickup:
+        TNT1 A 0 A_SpawnItemEx ("TenguSlash1",cos(-pitch)*56,8,32+(sin(-pitch)*48), momx, momy, 0,0,SXF_ABSOLUTEMOMENTUM,0)
+        TNT1 A 0 A_JumpIfInventory("PowerSpreadRune", 1, "PickupSpread")
+        stop
+    PickupSpread:
+        TNT1 A 0 A_SpawnItemEx ("TenguSlash1",cos(-pitch)*56,8,32+(sin(-pitch)*48), momx, momy, 0,20,SXF_ABSOLUTEMOMENTUM,0)
+        TNT1 A 0 A_SpawnItemEx ("TenguSlash1",cos(-pitch)*56,8,32+(sin(-pitch)*48), momx, momy, 0,-20,SXF_ABSOLUTEMOMENTUM,0)
+        stop
+    }
+}
+
+actor FireTenguSlash2 : CustomInventory
+{
+    States
+    {
+    Pickup:
+        TNT1 A 0 A_SpawnItemEx ("TenguSlash2",cos(-pitch)*56,8,32+(sin(-pitch)*48), momx, momy, 0,0,SXF_ABSOLUTEMOMENTUM,0)
+        TNT1 A 0 A_JumpIfInventory("PowerSpreadRune", 1, "PickupSpread")
+        stop
+    PickupSpread:
+        TNT1 A 0 A_SpawnItemEx ("TenguSlash2",cos(-pitch)*56,8,32+(sin(-pitch)*48), momx, momy, 0,20,SXF_ABSOLUTEMOMENTUM,0)
+        TNT1 A 0 A_SpawnItemEx ("TenguSlash2",cos(-pitch)*56,8,32+(sin(-pitch)*48), momx, momy, 0,-20,SXF_ABSOLUTEMOMENTUM,0)
+        stop
+    }
+}
+
+actor TenguDash : BasicExplosion
+{
+damagetype "TenguSlash"
+Obituary "$OB_TENGUBLADE"
+States
+{
+Spawn:
+TNT1 A 0
+SCLA HI 1 A_Explode(7,64,0)
+SCLA J 0 A_Explode(7,64,0)
+SCLA J 1 A_ScaleVelocity(0.5)
+SCLA J 1 A_FadeOut(0.5)
+stop
+Death:
+TNT1 A 0
+stop
+}
+}
+
+actor TenguSlash1 : BasicExplosion
+{
+damagetype "TenguSlash"
+Obituary "$OB_TENGUBLADE"
+States
+{
+Spawn:
+TBLA E 0
+TBLA E 0 A_SpawnItemEx("PropBlowerEffect")
+TBLA EF 2 A_Explode(9,80,0)
+stop
+}
+}
+
+actor TenguSlash2 : TenguSlash1
+{
+States
+{
+Spawn:
+TBLA G 0
+TBLA G 0 A_SpawnItemEx("PropBlowerEffect")
+TBLA GF 2 A_Explode(9,80,0)
+stop
+}
+}
+
+
+actor TenguBlade : BasicProjectile
+{
+Radius 12
+Height 8
+damage (24)
+Bouncetype Classic
++BOUNCEONWALLS
++CANBOUNCEWATER
+WALLBOUNCEFACTOR 0.91
+BOUNCEFACTOR 0.91
+BOUNCECOUNT 6
+damagetype "TenguBlade"
+Obituary "$OB_TENGUBLADE"
+speed 30
+States
+{
+Spawn:
+TNT1 A 3
+TBLA HI 2
+TBLA BCD 3 
+Goto Spawn+3
+Death:
+TNT1 A 0 
+stop
+}
+}
+
+actor TakeTenguBladeAmmo : CustomInventory
+{
+states
+{
+Pickup:
+TNT1 A 0 A_TakeInventory("TenguBladeAmmo", 2, TIF_NOTAKEINFINITE)
+stop
+}
+}

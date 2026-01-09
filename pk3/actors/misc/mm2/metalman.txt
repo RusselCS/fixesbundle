@@ -1,0 +1,77 @@
+ACTOR MetalPress 11676
+{
+  //$Category MM8BDM-Interactive Props
+  +DONTBLAST
+  +NOGRAVITY
+  +LOOKALLAROUND
+  +AMBUSH
+  +QUICKTORETALIATE
+  +FORCEYBILLBOARD
+  speed 0
+  Radius 32
+  Height 64
+  Scale 2.5
+  obituary "$OB_METALPRESS"
+  States
+  {
+  Spawn:
+    TNT1 A 0
+	PRES C 5 A_CustomMissile("PressDamager",0,0,0,2,0)
+	PRES C 0 A_LookEx(LOF_NOSOUNDCHECK, 0, 96, 0, 0, "Fall")
+	loop
+  Fall: 
+	PRES C 1 A_ChangeFlag("NOGRAVITY",0)
+	PRES C 5 A_CustomMissile("PressDamager",0,0,0,2,0)
+	PRES C 1 A_JumpIf(z-floorz < 8, "FallEnd")
+	Goto Fall+1
+  FallEnd:
+    PRES C 1 A_CustomMissile("OHKOPressDamager",0,0,0,2,0)
+	PRES C 1 A_PlaySoundEx("weapon/timestopper","Voice")
+	GoTo RiseStart	
+  RiseStart:
+	PRES CCCCCCCCC 5 A_CustomMissile("PressDamager",0,0,0,2,0)
+	PRES C 1 A_ChangeFlag("NOGRAVITY",1)
+	PRES C 1 ThrustThingZ(0,10,0,0)
+	Goto RiseContinue
+  RiseContinue:
+	PRES C 5 A_CustomMissile("PressDamager",0,0,0,2,0)
+	PRES C 1 A_JumpIf(ceilingz-z < 66, "End")
+	loop  
+  End:
+	PRES C 1 A_ClearTarget
+	Goto Spawn
+  }
+}
+
+actor PressDamager
+{
+PROJECTILE
++DONTBLAST
++DONTREFLECT
++THRUGHOST
++NOCLIP
+obituary "DOUBLEAGH"
+Damage (8)
+damagetype "MetalPress"
+SelfObituary "$OB_METALPRESS"
+Height 48
+Radius 32
+Speed 0
+scale 2.5
+states
+{
+Spawn:
+TNT1 A 0
+TNT1 A 0 A_ClearTarget
+TNT1 A 0 A_ChangeFlag("NOCLIP", 0)
+TNT1 A 5 
+stop
+}
+}
+
+actor OHKOPressDamager : PressDamager
+{
+Height 32
+Radius 16
+Damage (255)
+}

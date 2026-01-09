@@ -1,0 +1,472 @@
+actor PirSpike 11689
+{
+//$Category MM8BDM-Props
+-SOLID
++FORCEYBILLBOARD
++CLIENTSIDEONLY
+scale 2.5
+States
+{
+Spawn:
+PSPI A 1
+loop
+}
+}
+
+actor PirateMineSpawner 11690
+{
+//$Category MM8BDM-Interactive Props
+Height 80
+radius 32
++NOINTERACTION
++NOCLIP
+States
+{
+Spawn:
+PMIN A 0
+PMIN A 0 A_SpawnItemEx("PirateMine")
+stop
+}
+}
+
+actor PirateMine //11690
+{
+obituary "AGH"
+Damage (0)
+damagetype "PirateMine"
+SelfObituary "$OB_PIRATEMINE"
+Height 80
+radius 32
+Mass 99999999
+Health 100
+painchance 256
+damagefactor "normal", 0.0
+// damagefactor "WaveBurnerUW", 1.0
+// damagefactor "WaveBurner", 1.0
+// damagefactor "Breakdash", 1.0
+damagefactor "PropBlower", 1.0
++SHOOTABLE
++NOTAUTOAIMED
++NODAMAGETHRUST
++THRUSPECIES
++DONTBLAST
++MISSILE
++NOGRAVITY
++THRUGHOST
++QUICKTORETALIATE
++NOBLOOD
++NODAMAGE
++CANTSEEK
++DONTREFLECT
++FLOATBOB
++HITTARGET
++DONTDRAIN
+scale 2.5
+states
+{
+Spawn:
+PMIN A 35 A_ClearTarget
+wait
+Pain.PropBlower:
+PMIN A 0 A_ChangeFlag("NOINTERACTION", true)
+PMIN A 0 A_ChangeFlag("NORADIUSDMG", true)
+PMIN A 1
+PMIN A 0 ACS_NamedExecuteWithResult("core_targetyawpitch", 1)
+PMIN A 0 A_CustomMissile("PirateMineProjectile", 0, 0, 0, CMF_AIMDIRECTION|CMF_TRACKOWNER, -pitch)
+PMIN A 1
+TNT1 A 10
+TNT1 A 0 A_Die
+Goto Death
+XDeath:
+TNT1 A 0 A_SpawnItemEx("PirateMineExplode", 0, 0, 32)
+Death:
+TNT1 A 85
+PMIN A 0 A_Fadeout(0.5)
+PMIN A 35
+TNT1 A 10
+PMIN A 10
+TNT1 A 10
+PMIN A 10
+TNT1 A 5 A_Fadein(0.5)
+TFOG A 3
+TFOG CB 2
+TNT1 A 0 A_ClearTarget
+TNT1 A 0 A_ChangeFlag(FLOATBOB, false)
+TNT1 A 0 A_SpawnItemEx("PirateMine")
+stop
+}
+}
+
+actor PirateMineProjectile
+{
+PROJECTILE
+Radius 32
+Height 32
+scale 2.5
+damagetype "PirateMine"
+SelfObituary "$OB_PIRATEMINE"
+Obituary "%o was sunk by %k's Pirate Mine."
+damage (0)
+speed 50
++EXPLODEONWATER
+States
+{
+Spawn:
+PMIN A 1
+loop
+Death:
+BALA A 0 A_SpawnItemEx("PirateMineExplode", 0, 0, 32)
+stop
+}
+}
+
+actor PirateMineExplode : BasicHazardExplosion
+{
+	DamageType "PirateMine"
+    SelfObituary "$OB_PIRATEMINE"
+	Obituary "$OB_PIRATEMINECREDIT"
+    States
+    {
+    Spawn:
+		TNT1 A 0
+        TNT1 A 0 A_PlaySoundEx("weapon/crackerexplode", "Weapon")
+		TNT1 E 1 A_JumpIf(true, "Explode")
+		wait
+    Credit:
+        TNT1 E 0 A_SpawnItemEx("PirateMineExplosionFX")
+        TNT1 A 35 ACS_NamedExecuteWithResult("core_propexplode", 48, 160)
+        stop
+    NoCredit:
+        TNT1 E 0 A_SpawnItemEx("PirateMineExplosionFX")
+        TNT1 A 35 A_Explode(48,160,XF_HURTSOURCE)
+        stop
+    }
+}
+
+actor HazardCredit_PirateMineExplode : BasicACSDamager
+{
+	DamageType "PirateMine"
+    SelfObituary "$OB_PIRATEMINE"
+	Obituary "$OB_PIRATEMINECREDIT"
+}
+
+actor PirateMineExplosionFX : ExplosionEffect2
+{
+	var int user_NoTranslation;
+}
+
+Actor Kamikamin 11691
+{
+//$Category MM8BDM-Props
+//$Arg0 Underwater
+//$Arg0Enum { 0 = "Yes"; 1 = "No"; }
+//$Arg0Type 11
++NOINTERACTION
++CLIENTSIDEONLY
+Radius 16
+Height 16
+Scale 2.5
+States
+{
+Spawn: 
+PCST B 35
+PCST B 1 A_Jump(32, "Bubbles")
+loop
+Bubbles:
+PCST A 0 A_JumpIf(args[0]==1, "Open")
+PCST AAAAA 1 A_SpawnItemEx("WaveBurnerBubbleFX", 0, 0, Random(16, 24), Random(0, 2), 0, 0, random(-3,3))
+Goto Open+1
+Open:
+PCST A 5
+PCST AA 35
+PCST A 1 A_Jump(224, "Spawn")
+Loop
+}
+}
+
+actor HogaleUnderWater
+{
+Speed 4
+Scale 2.5
++CLIENTSIDEONLY
++ACTIVATEMCROSS
++DONTREFLECT
+-SOLID
++MISSILE
++RIPPER
++NOGRAVITY
++DONTBLAST
++INVULNERABLE
+States
+{
+Spawn:
+HOGA DE 5
+loop
+}
+}
+
+
+actor PirateShipwreck 11771
+{
+    //$Category MM8BDM-Props
+    //$Arg0 Graphic Type
+    //$Arg0Enum { 0 = "Hull"; 1 = "Stern"; 2 = "Small Mast"; 3 = "Large Mast"; 4 = "Log"; 5 = "Two Logs"; 6 = "Stick Decline"; 7 = "Stick Incline"; }
+    //$Arg0Type 11
+    //$Arg1 Underwater
+    //$Arg1Enum { 0 = "No"; 1 = "Yes"; }
+    //$Arg1Type 11
+    //$Arg2 Floating
+    //$Arg2Enum { 0 = "No"; 1 = "Yes"; }
+    //$Arg2Type 11
+	//$NotAngled
+    +NOGRAVITY
+    height 48
+    radius 48
+    scale 2.5
+    states
+    {
+    Spawn:
+        PRSH A 0
+        PRSH A 0 A_ChangeFlag(FLOATBOB, args[2])
+        PRSH A 0 A_JumpIf(args[1]==1, "Underwater")
+        PRSH A 0 A_JumpIf(args[0]==7, "StickIncline")
+        PRSH A 0 A_JumpIf(args[0]==6, "StickDecline")
+        PRSH A 0 A_JumpIf(args[0]==5, "DualLogs")
+        PRSH A 0 A_JumpIf(args[0]==4, "SingleLog")
+        PRSH A 0 A_JumpIf(args[0]==3, "LargeMast")
+        PRSH A 0 A_JumpIf(args[0]==2, "SmallMast")
+        PRSH A 0 A_JumpIf(args[0]==1, "Stern")
+        goto Hull
+    Hull:
+        PRSH A -1
+        stop
+    Stern:
+        PRSH B -1
+        stop
+    SmallMast:
+        PRSH C -1
+        stop
+    LargeMast:
+        PRSH D -1
+        stop
+    SingleLog:
+        PRSH E -1
+        stop
+    DualLogs:
+        PRSH F -1
+        stop
+    StickDecline:
+        PRSH G -1
+        stop
+    StickIncline:
+        PRSH H -1
+        stop
+		
+	Underwater:
+		PRSH A 0 A_JumpIf(args[0]==7, "SunkenStickIncline")
+        PRSH A 0 A_JumpIf(args[0]==6, "SunkenStickDecline")
+        PRSH A 0 A_JumpIf(args[0]==5, "SunkenDualLogs")
+        PRSH A 0 A_JumpIf(args[0]==4, "SunkenSingleLog")
+        PRSH A 0 A_JumpIf(args[0]==3, "SunkenLargeMast")
+        PRSH A 0 A_JumpIf(args[0]==2, "SunkenSmallMast")
+        PRSH A 0 A_JumpIf(args[0]==1, "SunkenStern")
+        goto SunkenHull
+    SunkenHull:
+        PR2H A -1
+        stop
+    SunkenStern:
+        PR2H B -1
+        stop
+    SunkenSmallMast:
+        PR2H C -1
+        stop
+    SunkenLargeMast:
+        PR2H D -1
+        stop
+    SunkenSingleLog:
+        PR2H E -1
+        stop
+    SunkenDualLogs:
+        PR2H F -1
+        stop
+    SunkenStickDecline:
+        PR2H G -1
+        stop
+    SunkenStickIncline:
+        PR2H H -1
+        stop
+    }
+}
+
+actor BubbleActivate : CustomInventory
+{
+inventory.amount 1
+inventory.maxamount 1
++INVENTORY.AUTOACTIVATE
+states
+{
+Spawn:
+TNT1 A 1
+loop
+Pickup:
+TNT1 A 0 A_GiveInventory("InBubble", 1)
+TNT1 A 0 A_SpawnItemEx("BubbleGiver")
+stop
+}
+}
+
+actor BubbleGiver
+{
+Height 0
+Radius 0
++NOINTERACTION
+-SOLID
++NOGRAVITY
++MISSILE
+States
+{
+Spawn:
+TNT1 A 0 
+TNT1 A 2 A_GiveToTarget("BubbleRise",1)
+TNT1 A 0 A_JumpIfInTargetInventory("IsDead",1,"Death")
+TNT1 A 0 A_JumpIfInTargetInventory("InBubble",1,"WaterCheck")
+Goto Death
+WaterCheck:
+TNT1 A 0 A_JumpIfInTargetInventory("IsUnderWater",1,"Spawn")
+Goto Death
+Death:
+TNT1 A 0 A_TakeFromTarget("InBubble", 1)
+TNT1 A 0 A_GiveToTarget("BubbleDeathFX",1)
+stop
+}
+}
+
+actor BubbleRise : CustomInventory
+{
+inventory.amount 1
+inventory.maxamount 1
++INVENTORY.AUTOACTIVATE
+states
+{
+Spawn:
+TNT1 A 1
+loop
+Pickup:
+TNT1 A 0
+TNT1 A 1 A_SpawnItemEx("BubbleFX1",1,0,0,momx, momy, momz, 0, SXF_ABSOLUTEMOMENTUM)
+TNT1 A 0 ThrustThingZ(0,20,0,0)
+stop
+}
+}
+
+actor BubbleRise2 : BubbleRise
+{
+states
+{
+Pickup:
+TNT1 A 0
+TNT1 A 1 A_SpawnItemEx("BubbleFX2",1,0,0,momx, momy, momz, 0, SXF_ABSOLUTEMOMENTUM)
+TNT1 A 0 ThrustThingZ(0,20,0,0)
+stop
+}
+}
+
+actor BubbleRise3 : BubbleRise
+{
+states
+{
+Pickup:
+TNT1 A 0
+TNT1 A 1 A_SpawnItemEx("BubbleFX3",1,0,0,momx, momy, momz, 0, SXF_ABSOLUTEMOMENTUM)
+TNT1 A 0 ThrustThingZ(0,20,0,0)
+stop
+}
+}
+
+
+
+actor BubbleFX1
+{
++NOTIMEFREEZE
++CLIENTSIDEONLY
+-SOLID
++NOGRAVITY
++NOINTERACTION
+scale 2.0
+height 0
+radius 0
+States
+{
+Spawn:
+PBUB A 3
+stop
+}
+}
+
+actor BubbleFX2 : BubbleFX1
+{
+States
+{
+Spawn:
+PBUB B 3
+stop
+}
+}
+
+
+actor BubbleFX3 : BubbleFX1
+{
+States
+{
+Spawn:
+PBUB C 3
+stop
+}
+}
+
+
+actor InBubble : Once {}
+
+actor BubbleDeathFX : CustomInventory
+{
+inventory.amount 1
+inventory.maxamount 1
++INVENTORY.AUTOACTIVATE
+states
+{
+Spawn:
+TNT1 A 1
+loop
+Pickup:
+TNT1 A 0 A_SpawnItemEx("BubblePop")
+TNT1 A 0 A_Stop
+TNT1 A 0 A_TakeInventory("JumpCancler",1)
+TNT1 A 0 A_JumpIfInventory("IsUnderWater", 1, "SmallBoost")
+TNT1 A 0 ThrustThingZ(0,40,0,1)
+TNT1 A 0 A_Recoil(-10)
+stop
+SmallBoost:
+TNT1 A 0 ThrustThingZ(0,30,0,1)
+TNT1 A 0 A_Recoil(-7)
+stop
+}
+}
+
+actor BubblePop
+{
+Speed 0
+Damage 0
+Scale 2.5
+Height 0
+Radius 0
++NOGRAVITY
+-SOLID
+States
+{
+Spawn:
+TNT1 A 2
+TNT1 A 0 A_PlaySoundEx("misc/piratebubble","Voice")
+PBUB D 2 A_Fadeout(0.1)
+wait
+}
+}

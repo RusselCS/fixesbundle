@@ -1,0 +1,170 @@
+actor CentaurFlashWep_NormalBar : NormalBar { args 4, 117 }
+actor CentaurFlashWep_ScriptBar : ScriptBar {}
+
+const int WEPC_6CF_MAXTIME = 140;
+// Check for commented versions of this when changing
+
+actor CentaurFlashWep : BaseMM8BDMWep 10080
+{
+//$Category MM8BDM-Weapons/Shield
+//$Title Centaur Flash
+//$Sprite WEA3G0
+Weapon.AmmoUse 7
+Weapon.AmmoGive 28
+Weapon.SlotNumber 7
+Inventory.Pickupmessage "$PU_CENTAURFLASH"
+Obituary "$OB_CENTAURFLASH"
+Tag "$TAG_CENTAURFLASH"
+weapon.ammotype "CentaurFlashAmmo"
+inventory.icon "CENTSI"
+States
+{
+SpawnLoop:
+WEA3 G -1
+loop
+Ready:
+CENF A 0 ACS_NamedExecuteWithResult("core_weaponcolor",CLR_CENTAURFLASH)
+CENF A 1 A_WeaponReady
+Goto Ready+1
+Deselect:
+CENF A 0 ACS_NamedExecuteWithResult("core_dontidentifytargetplayer", 0, false)
+CENF A 0 ACS_NamedExecuteWithResult("core_cantseekplayer", 0, false) // $WeapFixes
+CENF A 0 ACS_NamedExecuteWithResult("core_notargetplayer", 0, false)
+CENF A 0 A_TakeInventory("CentaurFlashNoAlpha", 999)
+CENF A 0 A_TakeInventory("CentaurFlashHalfAlpha", 999)
+CENF A 0 A_TakeInventory("CentaurFlashQuarterAlpha", 999)
+goto DeselectSwap
+Select:
+CENF A 0
+goto SelectSwap
+Fire:
+CENF A 0 A_JumpIfNoAmmo("NoAmmo")
+CENF BC 2
+CENF D 0 A_PlaySoundEx("weapons/mm6/centaurflashfire","Weapon")
+CENF A 0 A_FireCustomMissile("CentaurFlash",0,1,8,0)
+CENF D 0 A_GiveInventory("CentaurFlashTime",WEPC_6CF_MAXTIME)
+CENF A 0 ACS_NamedExecuteAlways("core_whiteflash",0)
+CENF DDDDDDDDDD 0 A_SpawnItemEx("CentaurFlashFX", 0, 0, 28, 256/12, 0, random2(256/12), random(0, 359))
+CENF DDDDDDDDDD 0 A_SpawnItemEx("CentaurFlashFX", 0, 0, 28, 256/12, 0, random2(256/12), random(0, 359))
+CENF D 2 A_GiveInventory("CentaurFlashHalfAlphaGiver", 1)
+CENF D 2 A_GiveInventory("CentaurFlashQuarterAlphaGiver", 1)
+CENF D 0 A_GiveInventory("CentaurFlashNoAlphaGiver", 1)
+CENF D 0 ACS_NamedExecuteWithResult("core_cantseekplayer", 0, true)
+CENF D 0 ACS_NamedExecuteWithResult("core_notargetplayer", 0, true)
+CENF D 0 ACS_NamedExecuteWithResult("core_dontidentifytargetplayer", 0, true)
+CENF D 0 A_GiveInventory("ShieldCheck", 1)
+CENF D 0 A_GiveInventory("CentaurFlashTimeShort",1) // minimum time
+goto FireBuffer
+FireBuffer:
+CENF D 1 A_RailWait
+CENF D 0 A_JumpIfInventory("CentaurFlashTimeShort", 1, "FireBuffer")
+CENF D 0 A_JumpIfInventory("CentaurFlashAlt", 1, "FireEnd")
+CENF D 0 A_Refire("FireHold")
+goto FireEnd
+FireHold:
+CENF D 0 A_TakeInventory("CentaurFlashTime", 1)
+CENF D 1 A_RailWait
+CENF D 0 A_Refire("FireHoldCheck")
+FireEnd:
+CENF D 3 A_PlaySoundEx("weapons/mm6/centaurflashexplode", "weapon")
+CENF D 0 A_TakeInventory("CentaurFlashAlt", 1)
+CENF D 0 A_TakeInventory("CentaurFlashTime", WEPC_6CF_MAXTIME)
+CENF D 0 A_FireCustomMissile("CentaurFlash",0,1,8,0)
+CENF DDDDDDDDDD 0 A_SpawnItemEx("CentaurFlashFX", 0, 0, 28, 256/12, 0, random2(256/12), random(0, 359))
+CENF DDDDDDDDDD 0 A_SpawnItemEx("CentaurFlashFX", 0, 0, 28, 256/12, 0, random2(256/12), random(0, 359))
+CENF D 0 ACS_ExecuteAlways(976,0)
+CENF D 0 ACS_NamedExecuteWithResult("core_cantseekplayer", 0, false)
+CENF D 0 ACS_NamedExecuteWithResult("core_notargetplayer", 0, false)
+CENF D 0 ACS_NamedExecuteWithResult("core_dontidentifytargetplayer", 0, false)
+CENF D 0 A_TakeInventory("ShieldCheck", 1)
+CENF D 2 A_TakeInventory("CentaurFlashNoAlpha", 999)
+CENF C 2 A_TakeInventory("CentaurFlashQuarterAlpha", 999)
+CENF B 1 A_TakeInventory("CentaurFlashHalfAlpha", 999)
+CENF A 13
+Goto Ready+1
+
+// CENF D 1 A_SetTranslucent(0.2, 0)
+// CENF D 1 A_SetTranslucent(0.4, 0)
+// CENF C 1 A_SetTranslucent(0.6, 0)
+// CENF C 1 A_SetTranslucent(0.8, 0)
+// CENF B 1 A_SetTranslucent(1.0, 0)
+FireHoldCheck:
+CENF D 0 A_JumpIfInventory("CentaurFlashTime", 1, "FireHold")
+CENF D 1 A_JumpIf(true, "FireEnd")
+wait
+AltFire:
+CENF A 0 A_JumpIfNoAmmo("NoAmmo")
+CENF A 0 A_GiveInventory("CentaurFlashAlt", 1)
+goto Fire+1
+NoAmmo:
+CENF A 1 ACS_NamedExecuteAlways("core_noammo",0)
+Goto Ready+1
+}
+}
+
+actor CentaurFlashTimeShort : Powerup { powerup.duration 35 }
+actor CentaurFlashTimeLong : Powerup { powerup.duration 175 }
+
+actor CentaurFlashAmmoWaitLong : PowerUp { powerup.duration 6 }
+actor CentaurFlashAmmoWaitShort : PowerUp { powerup.duration 3 }
+
+actor CentaurFlashQuarterAlphaGiver : PowerApropGiver {}
+actor CentaurFlashQuarterAlpha : PowerUp { powerup.duration 0x7FFFFFFD }
+actor CentaurFlashHalfAlphaGiver : PowerApropGiver {}
+actor CentaurFlashHalfAlpha : PowerUp { powerup.duration 0x7FFFFFFD }
+actor CentaurFlashNoAlphaGiver : PowerApropGiver {}
+actor CentaurFlashNoAlpha : PowerUp { powerup.duration 0x7FFFFFFD }
+
+actor ScreenFlash : CustomInventory
+{
+inventory.amount 1
+inventory.maxamount 1
++INVENTORY.AUTOACTIVATE
+States
+{
+Pickup:
+TNT1 A 1 ACS_ExecuteAlways(976,0)
+stop
+}
+}
+
+actor CentaurFlash : BasicExplosion
+{
+damagetype "CentaurFlash"
+Obituary "$OB_CENTAURFLASH"
+States
+{
+Spawn:
+TNT1 A 0
+TNT1 A 2 A_Explode(20,256,0,0,16+48)
+stop
+}
+}
+
+actor CentaurFlashFX : BasicGraphicEffect
+{
++FORCEXYBILLBOARD
++BRIGHT
+var int user_TranslateWhiteColors;
+States
+{
+SpawnFrame:
+TNT1 A 0
+CFL5 ABCD 3
+stop
+}
+}
+
+actor CentaurFlashAlt : Once {}
+
+actor CentaurFlashTime : WeaponCharge
+{
+	inventory.maxamount 140 // WEPC_6CF_MAXTIME
+}
+
+actor CentaurFlashAmmo : Ammo
+{
+inventory.amount 1
+inventory.maxamount 28
++INVENTORY.IGNORESKILL
+}

@@ -1,0 +1,39 @@
+actor PressBall 10526
+{
+//$Category MM8BDM-Interactive Props
+Radius 20
+scale 2.5
+Height 32
+DamageType "PressBall"
+SelfObituary "$OB_PRESSBALL"
+obituary "$OB_PRESSBALL"
++NOGRAVITY
++FORCEYBILLBOARD
++FORCERADIUSDMG
+-SOLID
+States
+{
+Spawn:
+PRES A 0
+PRES A 0
+PRES A 3 A_Explode(255, 32, 1, 0, 33)
+Goto Spawn+2
+}
+}
+
+//It's not really interactive, it just makes more sense to keep them together.
+actor PressStand 10527 
+{
+//$Category MM8BDM-Interactive Props
++NOINTERACTION
++FORCEYBILLBOARD
++CLIENTSIDEONLY
+-SOLID
+scale 2.5
+States
+{
+Spawn:
+PRES B -1
+stop
+}
+}

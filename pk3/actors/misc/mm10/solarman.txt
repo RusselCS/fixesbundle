@@ -1,0 +1,217 @@
+actor ChangkeyLauncher
+{
+    +NOINTERACTION
+    +NOTIMEFREEZE
+    var int user_gravity;
+    var int user_speed;
+    var int user_height;
+    States
+    {
+    Spawn:
+        TNT1 A 0
+        TNT1 A 0 A_JumpIf(user_gravity < 0, "Reverse")
+        TNT1 A 0 A_PlaySoundEx("misc/solartrap", "body")
+        TNT1 A 5 A_SpawnItemEx("SolarChangkey", 0, 0, 0, user_speed, 0, user_height)
+        TNT1 A 0 A_PlaySoundEx("misc/solartrap", "body")
+        TNT1 A 5 A_SpawnItemEx("SolarChangkey", 0, 0, 0, user_speed, 0, user_height)
+        TNT1 A 0 A_PlaySoundEx("misc/solartrap", "body")
+        TNT1 A 5 A_SpawnItemEx("SolarChangkey", 0, 0, 0, user_speed, 0, user_height)
+        TNT1 A 0 A_PlaySoundEx("misc/solartrap", "body")
+        TNT1 A 5 A_SpawnItemEx("SolarChangkey", 0, 0, 0, user_speed, 0, user_height)
+        stop
+    Reverse:
+        TNT1 A 0 A_PlaySoundEx("misc/solartrap", "body")
+        TNT1 A 5 A_SpawnItemEx("SolarChangkeyCeiling", 0, 0, 0, user_speed, 0, user_height)
+        TNT1 A 0 A_PlaySoundEx("misc/solartrap", "body")
+        TNT1 A 5 A_SpawnItemEx("SolarChangkeyCeiling", 0, 0, 0, user_speed, 0, user_height)
+        TNT1 A 0 A_PlaySoundEx("misc/solartrap", "body")
+        TNT1 A 5 A_SpawnItemEx("SolarChangkeyCeiling", 0, 0, 0, user_speed, 0, user_height)
+        TNT1 A 0 A_PlaySoundEx("misc/solartrap", "body")
+        TNT1 A 5 A_SpawnItemEx("SolarChangkeyCeiling", 0, 0, 0, user_speed, 0, user_height)
+        stop
+	YashichiCheck:
+        TNT1 A 0 A_JumpIf(random(1, 8) == 8, "Yashichi")
+		TNT1 A 1 A_JumpIf(true, "Spawn")
+		wait
+    Yashichi:
+        TNT1 A 0 A_PlaySoundEx("misc/solartrap", "body")
+        TNT1 A 5 A_SpawnItemEx("SolarChangkey", 0, 0, 0, user_speed, 0, user_height)
+        TNT1 A 0 A_PlaySoundEx("misc/solartrap", "body")
+        TNT1 A 5 A_SpawnItemEx("SolarChangkeyYashichi", 0, 0, 0, user_speed, 0, user_height)
+        TNT1 A 0 A_PlaySoundEx("misc/solartrap", "body")
+        TNT1 A 5 A_SpawnItemEx("SolarChangkey", 0, 0, 0, user_speed, 0, user_height)
+        TNT1 A 0 A_PlaySoundEx("misc/solartrap", "body")
+        TNT1 A 5 A_SpawnItemEx("SolarChangkey", 0, 0, 0, user_speed, 0, user_height)
+        stop
+    }
+}
+
+actor SolarChangkey
+{
+    PROJECTILE
+    -NOGRAVITY
+    +DONTBLAST
+    +THRUACTORS
+    +BRIGHT
+    Damage (5)
+    damagetype "SolarChangkey"
+	SelfObituary "$OB_SOLARCHANGKEY"
+    Height 10
+    radius 6
+    Scale 2.5
+    States
+    {
+    Spawn:
+        HOTH C 0
+        HOTH C 0 A_ClearTarget
+        HOTH C 0 A_ChangeFlag(THRUACTORS, false)
+        HOTH C 1 A_JumpIf(true, "SpawnLoop")
+        wait
+    SpawnLoop:
+        HOTH CD 2
+        goto Spawn+3
+    Death:
+        HOTH C 1
+        stop
+    }
+}
+
+actor SolarChangkeyCeiling : SolarChangkey
+{
+    +NOGRAVITY
+    States
+    {
+    SpawnLoop:
+        HOTH C 1
+        HOTH CDDC 1 A_ChangeVelocity(0, 0, 1.0)
+        goto SpawnLoop+1
+    }
+}
+
+actor SolarChangkeyYashichi : SolarChangkey
+{
+    States
+    {
+    SpawnLoop:
+        YASH EF 2
+        loop
+    }
+}
+
+actor Sola0 10833
+{
+//$Category MM8BDM-Props
+//$Arg0 Mode
+//$Arg0Enum { 0 = "Active"; 1 = "Inactive"; }
+//$Arg0Type 11
+//+CLIENTSIDEONLY
+scale 2.5
+radius 32
+height 52
++SOLID
+States
+{
+Spawn:
+TNT1 A 0
+SOLF A 1 A_JumpIf(args[0]==1, "HousePlant")
+Charge:
+SOLF B 4
+SOLF C 4 bright
+SOLF B 4
+SOLF C 4 bright
+SOLF B 4
+SOLF C 4 bright
+SOLF B 4
+SOLF C 4 bright
+SOLF B 2
+SOLF C 2 bright
+SOLF B 2
+SOLF C 2 bright
+SOLF B 2
+SOLF C 2 bright
+SOLF B 2
+SOLF C 2 bright
+SOLF B 2
+SOLF C 2 bright
+SOLF B 2
+SOLF C 2 bright
+SOLF B 2
+SOLF C 2 bright
+SOLF B 16
+SOLF D 2 Bright
+SOLF DDDDDDDDDD 0 A_SpawnItemEx("Sola0Particle", 27, -1, 49, frandom(0.5, 1.0), 0, frandom(-0.5, 0.5), frandom(-45, 45), SXF_MULTIPLYSPEED)
+SOLF E 5 bright
+SOLF E 30
+SOLF FAAA 5 
+loop
+HousePlant:
+SOLF A -1
+stop
+}
+}
+
+actor Sola0Particle : BasicGraphicEffect
+{
+    +BRIGHT
+    Scale 2.5
+    speed 12
+    States
+    {
+    Spawn:
+        SOLF GGGHH 1
+        SOLF H 0 A_Stop
+        SOLF HIIII 1
+        stop
+    }
+}
+
+actor SolarBirdSpawner
+{
++NOGRAVITY
+-SOLID
+scale 2.5
+height 32
+radius 16
+States
+{
+Spawn:
+SZFX A 0
+TNT1 A 1 A_Jump (256, "Orange", "Purple")
+wait
+Orange:
+TNT1 A 1 A_SpawnItemEx("Suzak",0,0,0,5)
+stop
+Purple:
+TNT1 A 1 A_SpawnItemEX("Fenix",0,0,0,5)
+stop
+}
+}
+
+actor Suzak
+{
+PROJECTILE
+Damage 0
++DONTBLAST
++RIPPER
++BRIGHT
+radius 32
+height 32
++BLOODLESSIMPACT
++CLIENTSIDEONLY
++DONTREFLECT
+scale 2.5
+speed 10
+-SOLID
++NOGRAVITY
+States
+{
+Spawn:
+SZFX ABCD 4
+loop
+}
+}
+
+actor Fenix : Suzak
+{
+translation "225:225=251:251", "215:215=33:33"
+}

@@ -1,0 +1,100 @@
+#library "hpchec"
+#include "zcommon.acs"
+
+script "core_CanGainHealth" (void)
+{
+SetResultValue(CanGainHealthFunc());
+}
+
+script "core_getmaxhealth" (int ptr) {
+	if(ptr != 0) {
+		SetActivator(0,ptr);
+	}
+	SetResultValue(GetMaxHealth(ActivatorTID()));
+}
+
+script "core_gethealth" (int ptr) {
+	if(ptr != 0) {
+		SetActivator(0,ptr);
+	}
+	SetResultValue(GetHealth(ActivatorTID()));
+}
+
+function bool CanGainHealthFunc(void)
+{
+return (GetHealth(0)>0 && GetHealth(0)<GetMaxHealth(0)); // $MISC
+}
+
+function int GetHealth(int tid)
+{
+return GetActorProperty(tid,APROP_Health);
+}
+
+function int GetMaxHealth(int tid)
+{
+int r = GetActorProperty(tid,APROP_SpawnHealth);
+if(r==0) r = 100;
+return r;
+}
+
+script "core_RegenerationRune" (void)
+{
+int counter = 0;
+while(CheckInventory("PowerRegenerationRune") > 0 && GetActorProperty(0, AProp_Health) > 0 && PlayerInGame(PlayerNumber())) {
+    delay(1);
+    counter = (counter + 1) % 35;
+    if (counter == 0) {
+        ACS_NamedExecuteWithResult("core_HealScript", 5);
+		PlaySound(0, "*regeneration", CHAN_ITEM);
+    }
+}
+}
+
+script "core_HealScript" (int amount)
+{
+if(CheckInventory("PowerProsperityRune") > 0) {amount *= 2;}
+SetResultValue(HealScriptFunc(amount));
+}
+
+function bool HealScriptFunc(int amount)
+{
+if(CanGainHealthFunc()) {
+	//AbsoluteHeal(amount);
+	PercentHeal(amount);
+	return true;
+}
+return false;
+}
+
+function void AbsoluteHeal(int amount)
+{
+int maxHealth = GetMaxHealth(0);
+if(maxHealth == 0) {maxHealth = 100;}
+HealThing(amount,maxHealth);
+}
+
+function void PercentHeal(int p)
+{
+int maxHealth = GetMaxHealth(0);
+if(maxHealth == 0) {maxHealth = 100;}
+int currentRemainder = CheckInventory("HealCent");
+int heal = p*maxHealth+currentRemainder;
+int healWhole = heal/100;
+
+if(healWhole>0) HealThing(healWhole,maxHealth);
+SetInventory2("HealCent", (heal-healWhole*100), currentRemainder);
+}
+
+function void SetInventory(str inventory_item, int amount)
+{
+SetInventory2(inventory_item,amount,CheckInventory(inventory_item));
+}
+
+function void SetInventory2(str inventory_item, int amount, int currentamount)
+{
+if(amount>currentAmount) {
+	GiveInventory(inventory_item,amount-currentAmount);
+} else if(amount<currentAmount) {
+	TakeInventory(inventory_item,currentAmount-amount);
+}
+}

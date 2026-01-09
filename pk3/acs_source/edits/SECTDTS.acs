@@ -1,0 +1,382 @@
+#library "SECTDTS"
+
+#include "zcommon.acs"
+
+#import "8BDT.acs"
+
+script "core_newwater" (void)
+{
+	// Activate Global Mode (I can't think of a cool way to do it)
+	if(ActivatorTID()==0){
+        Thing_ChangeTID(0, GLOBAL_WATER_TID);
+        terminate;
+	}
+
+    if(MAX_WATER_GLOBAL < MAX_WATER_GLOBAL_LIMIT) {
+		setWaterTag(MAX_WATER_GLOBAL, ActivatorTID());
+        MAX_WATER_GLOBAL++;
+	} else {
+        printbold(s:"Limit too low, need more water slots");
+    }
+}
+
+script "core_commonwater" ENTER
+{
+    int feetInWater = false;
+    int eyesInWater = false;
+    int oldFeetInWater = false;
+    int oldEyesInWater = false;
+    int WaterGravity;
+    int splashDelay = 0;
+
+    Delay(5);
+    if(ThingCountName("MM8BDM_Water",0)==0){terminate;}
+    while(GetActorProperty(ActivatorTID(),APROP_HEALTH)>0) {
+ 
+        int eyeDiff = GetActorProperty(0, APROP_ViewHeight);
+        int feetZ = GetActorZ(0);
+        int eyeZ = GetActorZ(0)+eyeDiff;
+        int tid = ActivatorTID();
+        int waterBase = 0.0;
+        int waterTop = 0.0;
+        int waterSector = 0;
+ 
+        // Determine which water sector the player is in (if any)
+        waterSector = findActorWater(tid);
+ 
+        // [Russ] if player is in water sector, give them physics based on their height in the sector,
+        // if they're within the defined height of the water, give them physics!
+        if(waterSector != 0)
+        {
+            feetInWater = isZPosInWaterTag(waterSector, feetZ);
+            eyesInWater = isZPosInWaterTag(waterSector, eyeZ);
+        }
+        else
+        {
+            feetInWater = false;
+            eyesInWater = false;
+        }
+ 
+        if(feetInWater != oldFeetInWater || eyesInWater != oldEyesInWater)
+        {
+            if(feetInWater || eyesInWater) {
+                if(CheckInventory("PowerWaterGrav") == 0) {
+                    GiveInventory("WaterGravityOn", 1);
+                }
+            } else {
+                GiveInventory("WaterGravityOff", 1);
+            }
+ 
+            if(feetInWater) {
+                GiveInventory("HasFeetInWater", 1);
+            } else {
+                TakeInventory("HasFeetInWater", 999);
+            }
+ 
+            if(eyesInWater) {
+                GiveInventory("IsUnderWater", 1);
+            } else {
+                TakeInventory("IsUnderWater", 999);
+            }
+ 
+            if(splashDelay <= 0)
+            {
+                bool entering = false;
+ 
+                if(eyesInWater != oldEyesInWater && feetInWater != oldFeetInWater)
+                {
+                    entering = eyesInWater || feetInWater;
+                    splashDelay = ACS_NamedExecuteWithResult("map_watersplash", 2, entering, false);
+                } else {
+                    if(eyesInWater != oldEyesInWater) {
+                        entering = eyesInWater;
+                        if(feetInWater) {
+                            splashDelay = ACS_NamedExecuteWithResult("map_watersplash", 0, entering, true);
+                        } else {
+                            splashDelay = ACS_NamedExecuteWithResult("map_watersplash", 1, entering, true);
+                        }
+                    } else if(feetInWater != oldFeetInWater) {
+                        entering = feetInWater;
+                        if(eyesInWater) {
+                            splashDelay = ACS_NamedExecuteWithResult("map_watersplash", 1, entering, false);
+                        } else {
+                            splashDelay = ACS_NamedExecuteWithResult("map_watersplash", 0, entering, false);
+                        }
+                    }
+                }
+                if(splashDelay == 0)
+                    splashDelay = 20;
+            }
+ 
+            oldFeetInWater = feetInWater;
+            oldEyesInWater = eyesInWater;
+        }
+ 
+        if(splashDelay > 0){splashDelay--;}
+        Delay(1);
+    }
+}
+
+script "core_newgel" (void)
+{
+    // Activate Global Mode (I can't think of a cool way to do it)
+	if(ActivatorTID()==0){
+        Thing_ChangeTID(0, GLOBAL_GEL_TID);
+        terminate;
+	}
+
+    if(MAX_GEL_GLOBAL < MAX_GEL_GLOBAL_LIMIT) {
+		setGelTag(MAX_GEL_GLOBAL, ActivatorTID());
+        MAX_GEL_GLOBAL++;
+	} else {
+        printbold(s:"Limit too low, need more gel slots");
+    }
+}
+
+script "core_burstgel" ENTER
+{
+    int feetInWater = false;
+    int eyesInWater = false;
+    int oldFeetInWater = false;
+    int oldEyesInWater = false;
+    int WaterGravity;
+    int splashDelay = 0;
+    int jumpDelay = 0;
+    int sinkConstant = 8.0;
+ 
+    int buttons = GetPlayerInput(-1, INPUT_BUTTONS);
+    int oldButtons = GetPlayerInput(-1, INPUT_OLDBUTTONS);
+ 
+    Delay(5);
+ 
+    if(ThingCountName("MM8BDM_BurstGel",0)==0){terminate;}
+ 
+    while(GetActorProperty(ActivatorTID(),APROP_HEALTH)>0){
+ 
+        int eyeDiff = GetActorProperty(0, APROP_ViewHeight);
+        int feetZ = GetActorZ(0);
+        int eyeZ = GetActorZ(0)+eyeDiff;
+        int tid = ActivatorTID();
+        int waterBase = 0.0;
+        int waterTop = 0.0;
+        int waterSector = 0;
+ 
+        // Determine which water sector the player is in (if any)
+        waterSector = findActorGel(tid);
+ 
+        // [Russ] if player is in water sector, give them physics based on their height in the sector,
+        // if they're within the defined height of the water, give them physics!
+        if(waterSector != 0)
+        {
+            
+        }
+        else
+        {
+            feetInWater = false;
+            eyesInWater = false;
+        }
+ 
+        // [Russ] if player is in water sector, give them physics based on their height in the sector,
+        // if they're within the defined height of the water, give them physics!
+        if(waterSector != 0) {
+ 
+            waterBase = GetActorZ(waterSector);
+            feetInWater = isZPosInWaterTag(waterSector, feetZ);
+            eyesInWater = isZPosInWaterTag(waterSector, eyeZ);
+ 
+            if(feetInWater) { // Feet in the gel.
+
+                if(jumpDelay == 0) {
+                    gelFlight(true);
+                    int velX = GetActorVelX(0);
+                    int velY = GetActorVelY(0);
+                    int velZ = GetActorVelZ(0);
+    
+                    if(!eyesInWater) { // Eyes above the gel.
+                        int comp = compareRange(feetZ, waterBase-sinkConstant-2.0, waterBase-sinkConstant+2.0);
+                        int jumpComp = compareRange(feetZ, waterBase-sinkConstant-8.0, waterBase-sinkConstant+8.0);
+    
+                        if(comp > 0) { // Feet above target zone
+                            gelFlight(false);
+                            if(velZ > 0) { SetActorVelocity(0, velX, velY, velZ/3, false, false); }
+
+                            if(velZ > -2.0 && velZ < 2.0) {
+                                ThrustThingZ(0, -(waterBase-sinkConstant-GetActorZ(0))>>16, 1, 0);
+                            }
+    
+                        } else if(comp < 0) { // Feet below target zone
+
+                            if(velZ > -2.0) {
+                                ThrustThingZ(0, (waterBase-sinkConstant-GetActorZ(0))>>16, 0, 0);
+                            }
+    
+                        } else { // Feet at target zone
+                            if(velZ > -2.0) {
+                                ThrustThingZ(0, 0, 0, 0);
+                            }
+                        }
+
+                        if(jumpComp == 0) {
+                            if((buttons & BT_JUMP) && !(oldButtons & BT_JUMP)) {
+                                GiveInventory("JumpSound", 1);
+                                ThrustThingZ(0, 45, 0, 0);
+                                jumpDelay = 15;
+                            }
+                        }
+                    } else { // Eyes in the gel.
+                        // a s c e n d
+                        ThrustThingZ(0, 6, 0, 1);
+                    }
+                } else {
+                    jumpDelay--;
+                }
+            } else { // Completely above the gel.
+                jumpDelay = 0;
+                gelFlight(false);
+            }
+
+        } else {
+            feetInWater = false;
+            eyesInWater = false;
+        }
+
+        if(feetInWater != oldFeetInWater || eyesInWater != oldEyesInWater) {
+
+            if(splashDelay <= 0)
+            {
+                bool entering = false;
+ 
+                if(eyesInWater != oldEyesInWater && feetInWater != oldFeetInWater)
+                {
+                    entering = eyesInWater || feetInWater;
+                    splashDelay = ACS_NamedExecuteWithResult("map_gelsplash", 2, entering, false);
+                } else {
+                    if(eyesInWater != oldEyesInWater) {
+                        entering = eyesInWater;
+                        if(feetInWater) {
+                            splashDelay = ACS_NamedExecuteWithResult("map_gelsplash", 0, entering, true);
+                        } else {
+                            splashDelay = ACS_NamedExecuteWithResult("map_gelsplash", 1, entering, true);
+                        }
+                    } else if(feetInWater != oldFeetInWater) {
+                        entering = feetInWater;
+                        if(eyesInWater) {
+                            splashDelay = ACS_NamedExecuteWithResult("map_gelsplash", 1, entering, false);
+                        } else {
+                            splashDelay = ACS_NamedExecuteWithResult("map_gelsplash", 0, entering, false);
+                        }
+                       
+                    }
+                }
+                if(splashDelay == 0)
+                    splashDelay = 20;
+            }
+            
+            oldFeetInWater = feetInWater;
+            oldEyesInWater = eyesInWater;
+        }
+ 
+        oldButtons = buttons;
+        buttons = GetPlayerInput(-1, INPUT_BUTTONS);
+        if(splashDelay > 0){splashDelay--;}
+        Delay(1);
+    }
+}
+
+function void gelFlight(bool onoff) {
+    if(onoff) {
+        GiveInventory("GelSpeed", 1);
+    } else {
+        TakeInventory("GelSpeed", 1);
+    }
+    ACS_NamedExecuteAlways("core_gelflight", 0, onoff);
+}
+ 
+script "core_gelflight" (int onoff) CLIENTSIDE
+{
+    if(PlayerIsBot(1) || PlayerCount()==1){terminate;}
+    SetPlayerProperty(0, onoff, PROP_FLY);
+}
+
+// RETURNS: <0 IF BELOW RANGE; 0 IF IN RANGE; >0 IF ABOVE RANGE
+function int compareRange(int val, int m, int n) {
+    int ret = 0;
+ 
+    int a = n-val;
+    int b = val-m;
+ 
+    if(a < 0) ret = -a;
+    if(b < 0) ret = b;
+ 
+    return ret;
+}
+
+script "core_liquidrespawn" RESPAWN
+{
+    ACS_NamedExecuteAlways("core_commonwater", 0);
+    ACS_NamedExecuteAlways("core_burstgel", 0);
+}
+
+script "core_definepit" (int dmg, int mod, int inr, int tag3d)
+{
+	int tag = ActivatorTID();
+    Thing_ChangeTID(0, 0); // $MISC
+	definePit(tag, dmg, mod, inr, tag3d);
+}
+
+function int definePit(int tag, int dmg, int mod, int inr, int tag3d)
+{
+	int idx = findPitByTagAndTag3d(tag, tag3d);
+
+	if(idx == -1) // create new pit
+	{
+		if(MAX_PIT_GLOBAL >= MAX_PIT_GLOBAL_LIMIT) {
+			Log(s:"Too many pits defined! Limit needs to be increased!");
+			return -1;
+		}
+		idx = MAX_PIT_GLOBAL;
+		MAX_PIT_GLOBAL++;
+
+		setPitTag(idx, tag);
+		setPitTag3d(idx, tag3d);
+	}
+	
+	if(dmg != 0) {
+		//Log(s:"Setting pit on tag: ", i:tag);
+		Sector_SetDamage(tag, dmg, mod, inr);
+	}
+
+	setPitMod(idx, mod);
+	setPitDamage(idx, dmg);
+	setPitInterval(idx, inr);
+	return idx;
+}
+
+script "core_checkPit" (int tid)
+{
+	setResultValue(checkPitByTID(tid));
+}
+
+script "core_checkPitByType" (int type, int tid)
+{
+    int pitIndex = getPitByTID(tid);
+    if (pitIndex != -1 && (type == 0 || getPitMod(pitIndex) == type)) {
+        SetResultValue(1);
+    } else {
+        SetResultValue(0);
+    }
+}
+
+script "core_changepit" (int tag, int dmg, int mod, int inr)
+{
+    int idx = findPitByTag(tag);
+
+    if(idx == -1) {
+        Log(s:"[core_changepit]\cgERROR: Sector tag ", d:tag, s:" does not have a pit defined.");
+    } else {
+        Sector_SetDamage(tag, dmg, mod, inr);
+        setPitMod(idx, mod);
+        setPitDamage(idx, dmg);
+        setPitInterval(idx, inr);
+    }
+}

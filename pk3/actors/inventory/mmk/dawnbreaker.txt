@@ -1,0 +1,552 @@
+actor DawnBreakerWep_ScriptBar : ScriptBar {}
+
+actor DawnBreakerWep : BaseMM8BDMWep
+{
+    //$Category MM8BDM-Weapons/Ranged
+    //$Title Dawn Breaker
+    //$Sprite DBR1A0
+    Weapon.AmmoUse 1
+    Weapon.AmmoGive 28
+    Weapon.SlotNumber 2
+    Inventory.Pickupmessage "$PU_DAWNBREAKER"
+    Obituary "$OB_DAWNBREAKER1"
+    Tag "$TAG_DAWNBREAKER"
+    weapon.ammotype "DawnBreakerAmmo"
+    inventory.icon "ALPHWI"
+    +WEAPON.CHEATNOTWEAPON
+    States
+    {
+    SpawnLoop:
+        DBR1 A -1
+        loop 
+    Ready:
+        DBRH A 0 ACS_NamedExecuteWithResult("core_weaponcolor",CLR_DAWNBREAKER)
+        DBRH A 1 A_WeaponReady
+        Goto Ready+1
+    Deselect:
+        DBRH A 0
+        goto DeselectSwap
+    Select:
+        DBRH A 0
+        goto SelectSwap
+    Fire:
+        DBRH A 0 A_JumpIfNoAmmo("NoAmmo")
+        DBRH A 1
+        goto Hold
+    AltFire:
+        DBRH A 0 A_JumpIfNoAmmo("NoAmmo")
+        DBRH A 3
+        goto Fire1
+    Hold:
+        DBRH A 0 A_JumpIfNoAmmo("NoAmmo")
+        DBRH A 0 A_JumpIfInventory("WeaponCharge",4,"Hold2")
+        DBRH A 0 A_JumpIfInventory("WeaponCharge",3,"HoldStart")
+        DBRH A 2 A_GiveInventory("WeaponCharge",1) // no rage rune for this one
+        DBRH A 0 A_Refire
+        Goto Fire1
+    HoldStart:
+        DBRH A 0 A_PlaySoundEx("weapons/mmk/dawnbreakercharge", "Weapon")
+        Goto Hold2
+    Hold2:
+        DBRH A 0 A_JumpIfInventory("WeaponCharge",23,"Hold3")
+        DBRH A 0 A_JumpIfInventory("WeaponCharge",22,"HoldStart2")
+        DBRH D 1 ACS_NamedExecuteWithResult("core_chargecolor",CLR_DAWNBREAKERCHARGE1,TCLR_CHARGE1)
+        DBRH D 0 A_Refire("Hold2.a")
+        Goto Fire1
+    Hold2.a:
+        DBRH A 1 ACS_NamedExecuteWithResult("core_chargecolor",CLR_DAWNBREAKER,TCLR_NONE)
+        DBRH A 0 A_GiveInventory("WeaponCharge", 1 + CallACS("core_checkrune", RUNE_RAGE))
+        DBRH A 0 A_Refire("Hold2")
+        Goto Fire1
+    HoldStart2:
+        DBRH A 0 //ACS_NamedExecuteAlways("core_botpause",0)
+        DBRH A 0 A_GunFlash("Sound.BusterCharge", GFF_NOEXTCHANGE)
+        DBRH A 0 A_GiveInventory("WeaponCharge", 1 + CallACS("core_checkrune", RUNE_RAGE))
+        Goto Hold3
+    Hold3:
+        DBRH E 1 ACS_NamedExecuteWithResult("core_chargecolor",CLR_DAWNBREAKERCHARGE2,TCLR_CHARGE2)
+        DBRH E 0 A_Refire("Hold3.a")
+        Goto Fire2
+    Hold3.a:
+        DBRH F 1 ACS_NamedExecuteWithResult("core_chargecolor",CLR_DAWNBREAKERCHARGE3,TCLR_CHARGE3)
+        DBRH F 0 A_Refire("Hold3.b")
+        Goto Fire2
+    Hold3.b:
+        DBRH A 1 ACS_NamedExecuteWithResult("core_chargecolor",CLR_DAWNBREAKER,TCLR_NONE)
+        DBRH A 0 A_JumpIfInventory("IsBot", 1, "BotFire")
+        DBRH A 0 A_Refire("Hold3")
+        Goto Fire2
+    BotFire:
+        DBRH A 0 A_Jump(16, "Fire2")
+        DBRH A 0 A_Refire("Hold3")
+        Goto Fire2
+    Fire1:
+        DBRH A 0 ACS_NamedExecuteWithResult("core_chargecolor",CLR_DAWNBREAKER,TCLR_NONE)
+        DBRH A 0 A_StopSoundEx ("SoundSlot5") 
+        DBRH A 0 A_TakeInventory("WeaponCharge",500)
+        DBRH A 0 A_ClearRefire
+        DBRH GH 1
+        DBRH A 0 A_PlaySoundEx("weapons/mmk/dawnbreakerfire","Weapon")
+        DBRH A 0 A_FireCustomMissile("BlastRuneWave",0,1,8,0)
+        DBRH A 0 A_FireCustomMissile("BlastRuneWaveL",0,0,8,0)
+        DBRH A 0 A_FireCustomMissile("BlastRuneWaveR",0,0,8,0)
+        DBRH IJKL 1
+        TNT1 A 25
+        DBRH BC 2
+        Goto Ready+1
+    Fire2:
+        DBRH A 0 ACS_NamedExecuteWithResult("core_chargecolor",CLR_DAWNBREAKER,TCLR_NONE)
+        DBRH D 0 A_TakeInventory("WeaponCharge",500)
+        DBRH D 0 A_ClearRefire
+        DBRH D 0 A_JumpIfInventory("DawnBreakerAmmo", 4, "Fire2r")
+        TNT1 A 1
+        DBRH GH 1
+        DBRH A 0 A_PlaySoundEx("weapons/mmk/dawnbreakerfire","Weapon")
+        DBRH A 0 A_FireCustomMissile("BlastRuneWave",0,1,8,0)
+        DBRH A 0 A_FireCustomMissile("BlastRuneWaveL",0,0,8,0)
+        DBRH A 0 A_FireCustomMissile("BlastRuneWaveR",0,0,8,0)
+        DBRH IJKL 1
+        TNT1 A 25
+        DBRH BC 2
+        Goto Ready+1
+    Fire2r:
+        DBRH A 0 ACS_NamedExecuteWithResult("core_chargecolor",CLR_DAWNBREAKER,TCLR_NONE)
+        DBRH A 0 ACS_NamedExecuteWithResult("core_flyplayer", 0, true) // $WeapFixes
+        DBRH A 0 A_ChangeVelocity(momx, momy, 0, CVF_REPLACE)
+        TNT1 A 1 A_ChangeVelocity(momx, momy, 0, CVF_REPLACE)
+        DBRH M 0 A_PlaySoundEx("weapons/mmk/dawnbreakerwindup", "weapon")
+        DBRH MMNNOOP 1 A_ChangeVelocity(momx, momy, 0, CVF_REPLACE)
+        DBRH OOO 1 A_ChangeVelocity(momx, momy, 0, CVF_REPLACE)
+        DBRH QRST 1 A_ChangeVelocity(momx, momy, 0, CVF_REPLACE)
+        DBRH T 0 A_PlaySoundEx("weapons/mmk/dawnbreakerwindup2", "weapon")
+        DBRH UUVVWWVV 1 A_ChangeVelocity(momx, momy, 0, CVF_REPLACE)
+        DBRH A 0 ACS_NamedExecuteWithResult("core_flyplayer", 0, false) // $WeapFixes
+        DBRH "XYZ[" 1
+        DBRH U 0 ThrustThingZ(0, 40, 1, 0)
+    Fire2Wait:
+        DBRH "]]]" 1 A_JumpIf(momz == 0 || z-floorz==0, "Explode")
+        DBRH U 0 ThrustThingZ(0, 40, 1, 1)
+        DBRH U 0 A_SpawnItemEx("DawnBreakerDive")
+        loop
+    Explode:
+        DBRH AAAA 0 A_SpawnItemEx("DawnBreakerAmmoSyncer")
+        DBRH A 0 A_PlaySoundEx("weapons/mmk/dawnbreakerfire","Weapon")
+        DBRH A 0 A_SpawnItemEx("DawnBreakerEmitter", 64, 0, -(z-floorz), 5, 5, 0,  0*360/16)
+        DBRH A 0 A_SpawnItemEx("DawnBreakerEmitter", 64, 0, -(z-floorz), 5, 5, 0,  1*360/16)
+        DBRH A 0 A_SpawnItemEx("DawnBreakerEmitter", 64, 0, -(z-floorz), 5, 5, 0,  2*360/16)
+        DBRH A 0 A_SpawnItemEx("DawnBreakerEmitter", 64, 0, -(z-floorz), 5, 5, 0,  3*360/16)
+        DBRH A 0 A_SpawnItemEx("DawnBreakerEmitter", 64, 0, -(z-floorz), 5, 5, 0,  4*360/16)
+        DBRH A 0 A_SpawnItemEx("DawnBreakerEmitter", 64, 0, -(z-floorz), 5, 5, 0,  5*360/16)
+        DBRH A 0 A_SpawnItemEx("DawnBreakerEmitter", 64, 0, -(z-floorz), 5, 5, 0,  6*360/16)
+        DBRH A 0 A_SpawnItemEx("DawnBreakerEmitter", 64, 0, -(z-floorz), 5, 5, 0,  7*360/16)
+        DBRH A 0 A_SpawnItemEx("DawnBreakerEmitter", 64, 0, -(z-floorz), 5, 5, 0,  8*360/16)
+        DBRH A 0 A_SpawnItemEx("DawnBreakerEmitter", 64, 0, -(z-floorz), 5, 5, 0,  9*360/16)
+        DBRH A 0 A_SpawnItemEx("DawnBreakerEmitter", 64, 0, -(z-floorz), 5, 5, 0, 10*360/16)
+        DBRH A 0 A_SpawnItemEx("DawnBreakerEmitter", 64, 0, -(z-floorz), 5, 5, 0, 11*360/16)
+        DBRH A 0 A_SpawnItemEx("DawnBreakerEmitter", 64, 0, -(z-floorz), 5, 5, 0, 12*360/16)
+        DBRH A 0 A_SpawnItemEx("DawnBreakerEmitter", 64, 0, -(z-floorz), 5, 5, 0, 13*360/16)
+        DBRH A 0 A_SpawnItemEx("DawnBreakerEmitter", 64, 0, -(z-floorz), 5, 5, 0, 14*360/16)
+        DBRH A 0 A_SpawnItemEx("DawnBreakerEmitter", 64, 0, -(z-floorz), 5, 5, 0, 15*360/16)
+        DBRH A 0 A_SpawnItemEx("DawnBreakerQuake", 0, 0, -(z-floorz))
+        TNT1 A 5
+        TNT1 A 10
+        DBRH BC 2
+        Goto Ready+1
+    NoAmmo:
+        DBRH A 1 ACS_NamedExecuteAlways("core_noammo",0)
+        Goto Ready+1
+    }
+}
+
+actor DawnBreakerAmmoSyncer : BasicWatcher
+{
+    States
+    {
+    Spawn:
+        TNT1 AA 0 A_TakeFromTarget("DawnBreakerAmmo", 1, TIF_NOTAKEINFINITE)
+        stop
+    }
+}
+
+actor DawnBreakerAmmo : Ammo
+{
+    inventory.amount 1
+    inventory.maxamount 28
+    +INVENTORY.IGNORESKILL
+}
+
+actor BlastRuneWave : BasicProjectile
+{
+    +FLOORHUGGER
+    +THRUACTORS
+    +SEEKERMISSILE
+    scale 1.0
+    height 8
+    radius 8
+    speed 30
+    mass 1
+    reactiontime 28
+	translation "192:192=196:196", "198:198=70:70"
+    States
+    {
+    Spawn:
+        TNT1 A 0
+        TNT1 A 0 A_SetAngle(angle+(mass-1)*10)
+        TNT1 A 0 A_ChangeVelocity(30, 0, 0, CVF_RELATIVE|CVF_REPLACE)
+        TNT1 A 0 A_SpawnItemEx("BlastRuneA", 0, 0, 0, 0, 0, 0, 0, SXF_TRANSFERTRANSLATION)
+        TNT1 A 0 A_SeekerMissile(2, 10, SMF_LOOK, 50, 10)
+        TNT1 A 0 A_JumpIfTargetInLOS("SpawnChase", 0, JLOSF_PROJECTILE)
+        TNT1 A 0 A_CountDown
+        TNT1 A 4
+		TNT1 A 0 A_SetAngle(angle+(mass-1)*10)
+        TNT1 A 0 A_ChangeVelocity(30, 0, 0, CVF_RELATIVE|CVF_REPLACE)
+        TNT1 A 0 A_SpawnItemEx("BlastRuneB", 0, 0, 0, 0, 0, 0, 0, SXF_TRANSFERTRANSLATION)
+        TNT1 A 0 A_SeekerMissile(2, 10, SMF_LOOK, 50, 10)
+        TNT1 A 0 A_JumpIfTargetInLOS("SpawnChase", 0, JLOSF_PROJECTILE)
+        TNT1 A 0 A_CountDown
+        TNT1 A 4
+		TNT1 A 0 A_SetAngle(angle+(mass-1)*10)
+        TNT1 A 0 A_ChangeVelocity(30, 0, 0, CVF_RELATIVE|CVF_REPLACE)
+        TNT1 A 0 A_SpawnItemEx("BlastRuneD", 0, 0, 0, 0, 0, 0, 0, SXF_TRANSFERTRANSLATION)
+        TNT1 A 0 A_SeekerMissile(2, 10, SMF_LOOK, 50, 10)
+        TNT1 A 0 A_JumpIfTargetInLOS("SpawnChase", 0, JLOSF_PROJECTILE)
+        TNT1 A 0 A_CountDown
+        TNT1 A 4
+		TNT1 A 0 A_SetAngle(angle+(mass-1)*10)
+        TNT1 A 0 A_ChangeVelocity(30, 0, 0, CVF_RELATIVE|CVF_REPLACE)
+        TNT1 A 0 A_SpawnItemEx("BlastRuneM", 0, 0, 0, 0, 0, 0, 0, SXF_TRANSFERTRANSLATION)
+        TNT1 A 0 A_SeekerMissile(2, 10, SMF_LOOK, 50, 10)
+        TNT1 A 0 A_JumpIfTargetInLOS("SpawnChase", 0, JLOSF_PROJECTILE)
+        TNT1 A 0 A_CountDown
+        TNT1 A 4
+        loop
+    SpawnChase:
+        TNT1 A 0
+        TNT1 A 0 A_ChangeVelocity(30, 0, 0, CVF_RELATIVE|CVF_REPLACE)
+        TNT1 A 0 A_SpawnItemEx("BlastRuneA", 0, 0, 0, 0, 0, 0, 0, SXF_TRANSFERTRANSLATION)
+        TNT1 A 0 A_SeekerMissile(2, 10, SMF_LOOK, 50, 10)
+        TNT1 A 0 A_CountDown
+        TNT1 A 4
+		TNT1 A 0 A_ChangeVelocity(30, 0, 0, CVF_RELATIVE|CVF_REPLACE)
+        TNT1 A 0 A_SpawnItemEx("BlastRuneB", 0, 0, 0, 0, 0, 0, 0, SXF_TRANSFERTRANSLATION)
+        TNT1 A 0 A_SeekerMissile(2, 10, SMF_LOOK, 50, 10)
+        TNT1 A 0 A_CountDown
+        TNT1 A 4
+		TNT1 A 0 A_ChangeVelocity(30, 0, 0, CVF_RELATIVE|CVF_REPLACE)
+        TNT1 A 0 A_SpawnItemEx("BlastRuneD", 0, 0, 0, 0, 0, 0, 0, SXF_TRANSFERTRANSLATION)
+        TNT1 A 0 A_SeekerMissile(2, 10, SMF_LOOK, 50, 10)
+        TNT1 A 0 A_CountDown
+        TNT1 A 4
+		TNT1 A 0 A_ChangeVelocity(30, 0, 0, CVF_RELATIVE|CVF_REPLACE)
+        TNT1 A 0 A_SpawnItemEx("BlastRuneM", 0, 0, 0, 0, 0, 0, 0, SXF_TRANSFERTRANSLATION)
+        TNT1 A 0 A_SeekerMissile(2, 10, SMF_LOOK, 50, 10)
+        TNT1 A 0 A_CountDown
+        TNT1 A 4
+        loop
+    Death:
+        TNT1 A 0
+        stop
+    }
+}
+
+actor BlastRuneWaveR : BlastRuneWave
+{
+    mass 0
+}
+
+actor BlastRuneWaveL : BlastRuneWave
+{
+    mass 2
+}
+
+actor BlastRuneA : BasicProjectile
+{
+    +FLOORHUGGER
+    +BRIGHT
+	Obituary "$OB_DAWNBREAKER1"
+    height 16
+    radius 10
+    speed 0
+    damage (5)
+    States
+    {
+    Spawn:
+        DBR1 B 5
+        DBR1 C 10
+    Death:
+        DBR1 D 5
+        DBR1 D 8 A_SpawnItemEx("BlastRuneExplosion", 0, 0, 0, 0, 0, 0, 0, SXF_TRANSFERTRANSLATION)
+        stop
+    }
+}
+
+actor BlastRuneB : BlastRuneA
+{
+	States
+    {
+    Spawn:
+        DBR1 E 5
+        DBR1 F 10
+    Death:
+        DBR1 G 5
+        DBR1 G 8 A_SpawnItemEx("BlastRuneExplosion", 0, 0, 0, 0, 0, 0, 0, SXF_TRANSFERTRANSLATION)
+        stop
+    }
+}
+
+actor BlastRuneD : BlastRuneA
+{
+	States
+    {
+    Spawn:
+        DBR1 H 5
+        DBR1 I 10
+    Death:
+        DBR1 J 5
+        DBR1 J 8 A_SpawnItemEx("BlastRuneExplosion", 0, 0, 0, 0, 0, 0, 0, SXF_TRANSFERTRANSLATION)
+        stop
+    }
+}
+
+actor BlastRuneM : BlastRuneA
+{
+	States
+    {
+    Spawn:
+        DBR1 K 5
+        DBR1 L 10
+    Death:
+        DBR1 M 5
+        DBR1 M 8 A_SpawnItemEx("BlastRuneExplosion", 0, 0, 0, 0, 0, 0, 0, SXF_TRANSFERTRANSLATION)
+        stop
+    }
+}
+
+actor BlastRuneExplosion : BasicExplosion
+{
+    +BRIGHT
+    damagetype "BlastRune"
+    Obituary "$OB_DAWNBREAKER1"
+    States
+    {
+    Spawn:
+        TNT1 A 0
+        TNT1 D 0 A_Explode(25, 64, 0, 0, 25)
+        TNT1 A 0 A_PlaySoundEx("weapons/mmk/dawnbreakerexplode", "Weapon")
+        DBR1 NMOPQRST 1
+        stop
+    }
+}
+
+actor DawnBreakerEmitter : BasicExplosion
+{
+    +FLOORHUGGER
+    +FORCEYBILLBOARD
+    +BRIGHT
+    +OLDRADIUSDMG
+    damagetype "DawnBreaker"
+    Obituary "$OB_DAWNBREAKER2"
+    radius 8
+    height 32
+    scale 2.0
+	translation "192:192=196:196", "198:198=70:70"
+    States
+    {
+    Spawn:
+        DBR1 E 0
+        DBR1 E 0 A_SetPitch(30)
+        DBR1 E 0 A_SetArg(0, 16)
+    Drag:
+		DBR1 V 0 A_SetScale(0.5, 2.0)
+        DBR1 V 1 A_SpawnItemEx("DawnBreakerFX1", -momx, -momy, 32, momx, momy, 0, 0, SXF_TRANSFERTRANSLATION|SXF_ABSOLUTEMOMENTUM|SXF_ABSOLUTEPOSITION|SXF_TRANSFERPITCH)
+		DBR1 U 0 A_SetScale(1.0, 2.0)
+        DBR1 U 1 A_SpawnItemEx("DawnBreakerFX2", -momx, -momy, 32, momx, momy, 0, 0, SXF_TRANSFERTRANSLATION|SXF_ABSOLUTEMOMENTUM|SXF_ABSOLUTEPOSITION|SXF_TRANSFERPITCH)
+		DBR1 V 0 A_SetScale(1.5, 2.0)
+        DBR1 V 1 A_SpawnItemEx("DawnBreakerFX3", -momx, -momy, 32, momx, momy, 0, 0, SXF_TRANSFERTRANSLATION|SXF_ABSOLUTEMOMENTUM|SXF_ABSOLUTEPOSITION|SXF_TRANSFERPITCH)
+		DBR1 U 0 A_SetScale(2.0, 2.0)
+    DragLoop:
+        DBR1 U 0 A_Explode(15, 24, 0, 0, 24)
+        DBR1 U 0 A_SetAngle(angle+12)
+        DBR1 U 0 A_ChangeVelocity(8, 0, 0, CVF_RELATIVE|CVF_REPLACE)
+        DBR1 U 0 A_SetArg(0, args[0]-1)
+        DBR1 U 0 A_JumpIf(args[0]<=0, "End")
+        DBR1 UUU 1 A_SpawnItemEx("DawnBreakerFX4", -momx, -momy, 32, momx, momy, 0, 0, SXF_TRANSFERTRANSLATION|SXF_ABSOLUTEMOMENTUM|SXF_ABSOLUTEPOSITION|SXF_TRANSFERPITCH)
+        DBR1 V 0 A_Explode(15, 24, 0, 0, 24)
+        DBR1 V 0 A_SetAngle(angle+12)
+        DBR1 V 0 A_ChangeVelocity(8, 0, 0, CVF_RELATIVE|CVF_REPLACE)
+        DBR1 V 0 A_SetArg(0, args[0]-1)
+        DBR1 V 0 A_JumpIf(args[0]<=0, "End")
+        DBR1 VVV 1 A_SpawnItemEx("DawnBreakerFX5", -momx, -momy, 32, momx, momy, 0, 0, SXF_TRANSFERTRANSLATION|SXF_ABSOLUTEMOMENTUM|SXF_ABSOLUTEPOSITION|SXF_TRANSFERPITCH)
+        loop
+    End:
+		DBR1 V 0 A_SetScale(1.5, 2.0)
+        DBR1 V 1 A_SpawnItemEx("DawnBreakerFX3", -momx, -momy, 32, momx, momy, 0, 0, SXF_TRANSFERTRANSLATION|SXF_ABSOLUTEMOMENTUM|SXF_ABSOLUTEPOSITION|SXF_TRANSFERPITCH)
+		DBR1 U 0 A_SetScale(1.0, 2.0)
+        DBR1 U 1 A_SpawnItemEx("DawnBreakerFX2", -momx, -momy, 32, momx, momy, 0, 0, SXF_TRANSFERTRANSLATION|SXF_ABSOLUTEMOMENTUM|SXF_ABSOLUTEPOSITION|SXF_TRANSFERPITCH)
+		DBR1 V 0 A_SetScale(0.5, 2.0)
+        DBR1 V 1 A_SpawnItemEx("DawnBreakerFX1", -momx, -momy, 32, momx, momy, 0, 0, SXF_TRANSFERTRANSLATION|SXF_ABSOLUTEMOMENTUM|SXF_ABSOLUTEPOSITION|SXF_TRANSFERPITCH)
+        stop
+    Death:
+        TNT1 A 0
+        stop
+    }
+}
+
+actor DawnBreakerBase : DawnBreakerEmitter
+{
+    -FLOORHUGGER
+    +CLIENTSIDEONLY
+    States
+    {
+    Spawn:
+        MMFX E 0
+        MMFX E 0 A_SetPitch(pitch-1)
+        MMFX E 0 A_JumpIf(ceilingz-z < 64 || pitch < 2, "FrameEnd")
+        MMFX E 1 A_JumpIf(true, "Continue")
+        wait
+    }
+}
+
+actor DawnBreakerFX1 : DawnBreakerBase
+{
+	XScale 0.5
+	YScale 2.0
+    States
+    {
+    Continue:
+        DBR1 X 0 A_SpawnItemEx("DawnBreakerFX1", -momx, -momy, 32, momx, momy, 0, 0, SXF_TRANSFERTRANSLATION|SXF_ABSOLUTEMOMENTUM|SXF_ABSOLUTEPOSITION|SXF_TRANSFERPITCH)
+    Frame:
+        DBR1 X 1
+        stop
+    FrameEnd:
+        DBR1 Z 1
+        stop
+    }
+}
+
+actor DawnBreakerFX2 : DawnBreakerBase
+{
+	XScale 1.0
+	YScale 2.5
+    States
+    {
+    Continue:
+        DBR1 W 0 A_SpawnItemEx("DawnBreakerFX2", -momx, -momy, 32, momx, momy, 0, 0, SXF_TRANSFERTRANSLATION|SXF_ABSOLUTEMOMENTUM|SXF_ABSOLUTEPOSITION|SXF_TRANSFERPITCH)
+    Frame:
+        DBR1 W 1
+        stop
+    FrameEnd:
+        DBR1 Y 1
+        stop
+    }
+}
+
+actor DawnBreakerFX3 : DawnBreakerBase
+{
+	XScale 1.5
+	YScale 2.5
+    States
+    {
+    Continue:
+        DBR1 X 0 A_SpawnItemEx("DawnBreakerFX3", -momx, -momy, 32, momx, momy, 0, 0, SXF_TRANSFERTRANSLATION|SXF_ABSOLUTEMOMENTUM|SXF_ABSOLUTEPOSITION|SXF_TRANSFERPITCH)
+    Frame:
+        DBR1 X 1
+        stop
+    FrameEnd:
+        DBR1 Z 1
+        stop
+    }
+}
+
+actor DawnBreakerFX4 : DawnBreakerBase
+{
+    States
+    {
+    Continue:
+        DBR1 W 0 A_SpawnItemEx("DawnBreakerFX4", -momx, -momy, 32, momx, momy, 0, 0, SXF_TRANSFERTRANSLATION|SXF_ABSOLUTEMOMENTUM|SXF_ABSOLUTEPOSITION|SXF_TRANSFERPITCH)
+    Frame:
+        DBR1 W 1
+        stop
+    FrameEnd:
+        DBR1 Y 1
+        stop
+    }
+}
+
+actor DawnBreakerFX5 : DawnBreakerBase
+{
+    States
+    {
+    Continue:
+        DBR1 X 0 A_SpawnItemEx("DawnBreakerFX5", -momx, -momy, 32, momx, momy, 0, 0, SXF_TRANSFERTRANSLATION|SXF_ABSOLUTEMOMENTUM|SXF_ABSOLUTEPOSITION|SXF_TRANSFERPITCH)
+    Frame:
+        DBR1 X 1
+        stop
+    FrameEnd:
+        DBR1 Z 1
+        stop
+    }
+}
+
+actor DawnBreakerDive : BasicExplosion
+{
+	Obituary "$OB_DAWNBREAKER2"
+    damagetype "DawnBreaker"
+    States
+    {
+    Spawn:
+        TNT1 A 0
+        TNT1 A 0 A_Explode(12, 64, 0, 0, 64)
+        TNT1 A 1
+        stop
+    }
+}
+
+actor DawnBreakerQuake : BasicExplosion
+{
+	Obituary "$OB_DAWNBREAKER2"
+    damagetype "DawnBreaker"
+	States
+	{
+	Spawn:
+        TNT1 A 0
+		TNT1 A 0 Radius_Quake(6, 7, 0, 3, 0)
+        TNT1 A 0 A_PlaySoundEx("weapons/mmk/dawnbreakerquake", "weapon")
+        TNT1 AAAAAAAAAA 0 A_SpawnItemEx("DawnBreakerDebris",0,0,0,random(1,5),random(-10,10),random(8,12),random(-5,5))
+        TNT1 A 0 A_Explode(60, 96, 0, 0, 96)
+		TNT1 A 35
+		stop
+	}
+}
+
+// Copy-pasted from Sakugarne
+actor DawnBreakerDebris : BasicGraphicEffect
+{
+    translation "192:192=220:220", "198:198=46:46"
+    -NOGRAVITY
+    -NOINTERACTION
+    +DONTSPLASH
+    +THRUACTORS
+    Damage (0)
+    Speed 5
+    scale 1.0
+    States
+    {
+        Spawn:
+            TNT1 A 0
+            TNT1 A 1
+            TNT1 A 0 A_Jump(256,"Debris1","Debris2","Debris3","Debris4")
+        Debris1:
+            TNT1 A 1
+            QBOP A -1
+        Debris2:
+            TNT1 A 1
+            QBOP B -1
+        Debris3:
+            TNT1 A 1
+            QBOP C -1
+        Debris4:
+            QBOP E -1
+            stop
+    }
+}

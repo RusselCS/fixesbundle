@@ -1,0 +1,94 @@
+== V1A TO DO ==
+Done
+- TeamInfo: Toggle
+- TeamInfo: Scale
+- TeamInfo: Alpha
+- TeamInfo: Bar Style (Vert/Horz)
+- TeamInfo: Build Direction (Up or Down)
+- TeamInfo: Mirror
+- TeamInfo: Toggle Name
+- TeamInfo: Toggle Health
+- TeamInfo: Toggle Mugshot
+- TeamInfo: Toggle Location
+- TeamInfo: Toggle Radar
+- WeapBar: Toggle Slots
+- WeapBar: Alpha
+
+== V1B TO DO ==
+Done
+- Player name length cap?
+- v6a modal code support
+- MSG_TIME should be 1873
+- Doublebars on scriptbars
+- WeaponBar: Horizontal + mirrored double bars drawn in the wrong place
+- Teaminfo support coop
+
+== V1C TO DO ==
+Done:
+- AllanX update
+- MegaVile update
+
+== V1D TO DO ==
+Done:
+- Remove MegaVile and Encore
+- Check BluemanBlaster
+
+== V2A TO DO ==
+Done:
+- Mod support
+- Fix cvars not doing anything.
+- Version checker
+- Teaminfo: Weapon bar still broken
+- Teaminfo: Fix name caching
+- Teaminfo: Finish setbarcliprect update
+- Teaminfo: Stock pips over mugshots
+- Teaminfo: Add location back
+- Missed a "scuttlerun" in the menu somewhere. Squash that.
+- Frag messages: Add mugshot on frag message
+- ???????: Move MSGIDs to v6b's data structure???
+- Compress weapon bar
+
+== V2B TO DO ==
+(numbers indicate difficulty)
+
+Done:
+2 MENUDEF: Organizational updated.
+1 Presets: Default name squish needs adjustment for new health bar (+update when default)
+1 Presets: Bottom-left default preset packs up too quick
+1 MENUDEF: Remove SafeCommand from the presets.
+4 Add a "layer" option for all components (was a 4/5 because of the diff size, not from actual difficulty)
+1 Killfeed: Fix when mugshot is not found. (Invalid)
+3 Teaminfo: Name squish sometimes does not work for vertical mode.
+2 WeaponBar: Apparently doubleammo does not depopulate when overwritten
+1 Cleanup: Remove constants unused
+2 Teaminfo: Trill's request: Add ability for the component to "wrap."
+- Cleanup: Move "bloat" tables into separate include files
+- Killfeed: Fix mugshots in self-destruct scenarios.
+- Killfeed: Should work for spectators.
+- Killfeed: Fixed hudmessages being drawn, even for players not part of the kill transaction.
+- Teaminfo: Update offsets of everything again
+- Teaminfo: Fixed possible cache misses on some components, which should improve performance.
+- weaponbar: bug fixes
+- give a full-size weapon bar
+- Teaminfo: Objective items should display.
+- Pickup respawn: 1 minute timer
+
+== V2C TO DO ==
+2 Staging: Check The Big List of mods again to make sure all the data is properly staged (busters too)
+1 Staging: Get Xover staging script from SDM.
+3 Teaminfo: X/Y Stack / Wrap Up/Down
+5 Teaminfo: MegaVile's request - Elements dynamically scale with disabled elements.
+4 Teaminfo: Make it so weapons with no icon offset the bars
+3 Teaminfo: Add number toggles for everything
+
+== Future ==
+- Add a compass + location.
+- Directed Camera. (Stretch goal: 3rd person)
+- Final Frag Camera. (Slow down time orbit around between the final two players. Should not override map-side final frag events.)
+- Assist message?
+- Look into Hexen's inventory cycler
+- Wire UI element
+- Debuff Icons/Timers
+- Map stuff
+- Exit Unit UI element
+- Weapon bar appear/disappear when switching weapons

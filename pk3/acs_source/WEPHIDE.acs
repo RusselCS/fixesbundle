@@ -1,0 +1,225 @@
+#library "WEPHIDE"
+
+#include "zcommon.acs"
+
+#include "DTADD.acs"
+#include "PICKRPLC.acs"
+
+#import "8BDT.acs"
+
+#define CVAR_BANWEP "banwep_"
+#define CVAR_REPLACEWEP "replacewep_"
+
+#define CVAR_BANITEM "banitem_"
+#define CVAR_REPLACEITEM "replaceitem_"
+
+script "banwep_addhook" OPEN
+{
+	AddSpawnFunc(DTADD_SFT_WEP, "banwep_bancheck");
+	AddSpawnFunc(DTADD_SFT_ITEM, "banwep_banitemcheck");
+	AddSpawnFunc(DTADD_SFT_PARTYBALL, "banwep_banitemcheck");
+}
+
+script "banwep_removefromlms" OPEN
+{
+	Delay(1);
+	
+	int i;
+	for(i = 0; i < MAX_WEAPONS_GLOBAL; i++)
+	{
+		if(GetCvar(StrParam(s:CVAR_BANWEP, s:getWeaponActor(i)))) {
+			if(isWeaponMapValid(i)) setWeaponMapValid(i, false);
+			if(isWeaponLMSValid(i)) setWeaponLMSValid(i, false);
+			if(isWeaponEddieValid(i)) setWeaponEddieValid(i, false);
+		}
+	}
+
+	for(i = 0; i < MAX_BUSTERUPGRADES; i++)
+	{
+		if(GetCvar(StrParam(s:CVAR_BANWEP, s:getBusterUpgrade(i)))) {
+			if(isBusterMapValid(i)) setBusterMapValid(i, false);
+			if(isBusterLMSValid(i)) setBusterLMSValid(i, false);
+			if(isBusterEddieValid(i)) setBusterEddieValid(i, false);
+		}
+	}
+
+	for(i = 0; i < MAX_ITEMS_GLOBAL; i++)
+	{
+		if(GetCvar(StrParam(s:CVAR_BANITEM, s:getAssistItemActor(i)))) {
+			if(isAssistItemMapValid(i)) setAssistItemMapValid(i, false);
+		}
+	}
+}
+
+script "banwep_bancheck" (void)
+{
+	str cvar = StrParam(s:CVAR_BANWEP, s:GetActorClass(0));
+	str replace = GetCvarString(StrParam(s:CVAR_REPLACEWEP, s:GetActorClass(0)));
+
+	if(GetCvar(cvar)) {
+		GiveInventory("banwep_specialoff", 1);
+		Thing_Remove(0);
+		terminate;
+	}
+	if(!validString(replace)) { terminate; }
+	if(Timer() >= 3) { terminate; }
+	Delay(4);
+	if(CheckFlag(0, "NOBLOCKMAP")) {terminate;}
+
+	int u = UniqueTID();
+	if(SpawnForced(replace, 0, 0, 0, u, 0)) {
+		Thing_Remove(u);
+		SpawnNewWepFunc(replace);
+	}
+}
+
+script "banwep_resetbans" (void)
+{
+	int i, cvar;
+	for(i = 0; i < MAX_WEAPONS_GLOBAL; i++)
+	{
+		cvar = StrParam(s:CVAR_BANWEP, s:getWeaponActor(i));
+		if(GetCvar(cvar)) SetCvar(cvar, false);
+	}
+	for(i = 0; i < MAX_BUSTERUPGRADES; i++)
+	{
+		cvar = StrParam(s:CVAR_BANWEP, s:getBusterUpgrade(i));
+		if(GetCvar(cvar)) SetCvar(cvar, false);
+	}
+}
+
+script "banwep_resetreplaces" (void)
+{
+	int i, cvar;
+	for(i = 0; i < MAX_WEAPONS_GLOBAL; i++)
+	{
+		cvar = StrParam(s:CVAR_REPLACEWEP, s:getWeaponActor(i));
+		if(validString(GetCvarString(cvar))) SetCvarString(cvar, "");
+	}
+	for(i = 0; i < MAX_BUSTERUPGRADES; i++)
+	{
+		cvar = StrParam(s:CVAR_REPLACEWEP, s:getBusterUpgrade(i));
+		if(validString(GetCvarString(cvar))) SetCvarString(cvar, "");
+	}
+}
+
+script "banwep_banitemcheck" (void)
+{
+	if(isBusterUpgrade()) { // handle busters in the banwep script, for ease of use.
+		ACS_NamedExecuteWithResult("banwep_bancheck");
+		terminate;
+	}
+
+	str cvar = StrParam(s:CVAR_BANITEM, s:GetActorClass(0));
+	str replace = GetCvarString(StrParam(s:CVAR_REPLACEITEM, s:GetActorClass(0)));
+
+	if(GetCvar(cvar)) {
+		GiveInventory("banwep_specialoff", 1);
+		Thing_Remove(0);
+		terminate;
+	}
+	if(!validString(replace)) {	terminate; }
+
+	if(Timer() >= 3) { terminate; }
+	Delay(4);
+	if(CheckFlag(0, "NOBLOCKMAP")) {terminate;}
+
+	int u = UniqueTID();
+	if(SpawnForced(replace, 0, 0, 0, u, 0)) {
+		Thing_Remove(u);
+		SpawnNewWepFunc(replace);
+	}
+}
+
+#define MAX_LESSERPICKUPS 7
+
+str lesserPickupsList[MAX_LESSERPICKUPS] = { "SmallHealth", "BigHealth", "MegaHealth", "WeaponEnergy", "BigWeaponEnergy", "MegaWeaponEnergy", "PartyBall" };
+
+script "banwep_resetitembans" (void)
+{
+	int i, cvar;
+	for(i = 0; i < MAX_LESSERPICKUPS; i++)
+	{
+		cvar = StrParam(s:CVAR_BANITEM, s:lesserPickupsList[i]);
+		if(GetCvar(cvar)) SetCvar(cvar, false);
+	}
+	for(i = 0; i < MAX_ITEMS_GLOBAL; i++)
+	{
+		cvar = StrParam(s:CVAR_BANITEM, s:getAssistItemActor(i));
+		if(GetCvar(cvar)) SetCvar(cvar, false);
+	}
+}
+
+script "banwep_resetitemreplaces" (void)
+{
+	int i, cvar;
+	for(i = 0; i < MAX_LESSERPICKUPS; i++)
+	{
+		cvar = StrParam(s:CVAR_REPLACEITEM, s:lesserPickupsList[i]);
+		if(validString(GetCvarString(cvar))) SetCvarString(cvar, "");
+	}
+	for(i = 0; i < MAX_ITEMS_GLOBAL; i++)
+	{
+		cvar = StrParam(s:CVAR_REPLACEITEM, s:getAssistItemActor(i));
+		if(validString(GetCvarString(cvar))) SetCvarString(cvar, "");
+	}
+}
+
+script "banwep_contingency" ENTER
+{
+	delay(5); // by this time, everything should be fully removed from the round...
+	
+	int i, wh;
+	for(i = 0; i < MAX_WEAPONS_GLOBAL; i++)
+	{
+		wh = getWeaponActor(i);
+		if(CheckInventory(wh) > 0)
+			if(GetCvar(StrParam(s:CVAR_BANWEP, s:wh)) || validString(GetCvar(StrParam(s:CVAR_REPLACEWEP, s:wh))))
+				SetInventory(wh, 0);
+	}
+
+	for(i = 0; i < MAX_BUSTERUPGRADES; i++)
+	{
+		wh = getBusterUpgrade(i);
+		if(CheckInventory(wh) > 0)
+			if(GetCvar(StrParam(s:CVAR_BANWEP, s:wh)) || validString(GetCvar(StrParam(s:CVAR_REPLACEWEP, s:wh))))
+				SetInventory(wh, 0);
+	}
+
+	for(i = 0; i < MAX_ITEMS_GLOBAL; i++)
+	{
+		wh = getAssistItemActor(i);
+		if(CheckInventory(wh) > 0)
+			if(GetCvar(StrParam(s:CVAR_BANITEM, s:wh)) || validString(GetCvar(StrParam(s:CVAR_REPLACEITEM, s:wh))))
+				SetInventory(wh, 0);
+	}
+}
+
+function void SetInventory(str inventory_item, int amount)
+{
+SetInventory2(inventory_item,amount,CheckInventory(inventory_item));
+}
+
+function void SetInventory2(str inventory_item, int amount, int currentamount)
+{
+if(amount>currentAmount) GiveInventory(inventory_item,amount-currentAmount);
+else if(amount<currentAmount) TakeInventory(inventory_item,currentAmount-amount);
+}
+
+function bool validString(str in)
+{
+	return in != 0 && StrLen(in) > 0;
+}
+
+function bool isBusterUpgrade(void) {
+	return CheckForVar("user_RemoveAsBusterUpgrade");
+}
+
+function bool CheckForVar(str theVar) {
+	return CheckForActorVar(0, theVar);
+}
+
+function bool CheckForActorVar(int tid, str theVar) {
+	SetUserVariable(tid,theVar,1);
+	return (GetUserVariable(tid,theVar)==1);
+}

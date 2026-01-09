@@ -1,0 +1,195 @@
+actor MarsCam 11745
+{
+//$Category MM8BDM-Props
++CLIENTSIDEONLY
+-SOLID
++NOGRAVITY
++FORCEYBILLBOARD
++SPAWNCEILING
+scale 2.5
+States
+{
+Spawn:
+MARP A 1
+loop
+}
+}
+
+actor MarsMine 11744
+{
+//$Category MM8BDM-Interactive Props
+//$NotAngled
++SHOOTABLE
++NOBLOOD
++DONTBLAST
++CANTSEEK
++FORCEYBILLBOARD
++THRUSPECIES
+mass 9999
+height 1
+radius 16
+scale 2.5
+damagetype "MarsMine"
+SelfObituary "$OB_MARSMINE"
+damagefactor "Normal", 0.0
+damagefactor "MarsMine", 1.0
+health 1
+states
+{
+Spawn:
+MARP A 1
+MARP A 1 A_SpawnItemEx("MarsMineDetect", 0, 0, 34)
+MARP A 0 A_JumpIfInventory("MarsMineFlag", 1, "Death")
+Goto Spawn2
+Spawn2:
+MARP A 0
+MARP A 1 A_JumpIfInventory("MarsMineFlag", 1, "CountDown")
+wait
+
+CountDown:
+MARP CD 10
+MARP E 10 A_PlaySoundEx("misc/scorebounce","Voice")
+MARP CD 10
+MARP E 10 A_PlaySoundEx("misc/scorebounce","Voice")
+MARP CD 10
+MARP E 10 A_PlaySoundEx("misc/scorebounce","Voice")
+MARP CDECDECDE 2
+Goto Death
+
+Death:
+MARP D 0 A_ClearTarget
+MARP D 0 A_Explode(20,96,0)
+NAPA E 0 A_Changeflag("Solid", 0)
+NAPA E 0 A_PlaySoundEx("weapon/crackerexplode","Voice")
+NAPA EFGHIJKLMNOPQRS 1
+MARP A 0 A_SpawnItemEx("MarsMineRespawner")
+stop
+}
+}
+
+actor MarsMineRespawner
+{
+	+NOINTERACTION
+	+THRUACTORS
+	+NOGRAVITY
+	Scale 2.5
+	Renderstyle translucent
+	Alpha 0.5
+	States
+	{
+	Spawn:
+		TNT1 A 0
+		TNT1 A 0 A_SetArg(0, 10)
+	SpawnWait:
+		TNT1 A 35
+		TNT1 A 0 A_SetArg(0, args[0]-1)
+		TNT1 A 0 A_JumpIf(args[0]>0, "SpawnWait")
+		MARP BZBZ 10
+		MARP BZBZ 5
+		MARP A 0 A_SetTranslucent(1.0, 0)
+		TFOG A 3
+		TFOG CB 2
+		TNT1 A 0 A_PlaySoundEx("misc/SpawnIn","Voice")
+		TNT1 A 0 A_SpawnItemEx("MarsMine")
+		stop
+	}
+}
+
+actor MarsMineDetect
+{
+PROJECTILE
++LOOKALLAROUND
++SKYEXPLODE
++DONTBLAST
++DONTREFLECT
+Speed 0
+Damage (0)
+radius 32
+height 5
+scale 2.5
+States
+{
+Spawn:
+TNT1 A 2
+loop
+Death:
+TNT1 A 0
+TNT1 A 0 A_GiveToTarget("MarsMineFlag", 1)
+stop
+}
+}
+
+Actor MarsMineFlag : Inventory
+{
+Inventory.Amount 1
+Inventory.maxamount 1
+}
+
+actor MarsRocketSpawner 11751
+{
+	//$Category MM8BDM-Interactive Props
+	//$NotAngled
+	-SOLID
+	+NOGRAVITY
+	+NOINTERACTION
+	+FORCEYBILLBOARD
+	Renderstyle none
+	radius 32
+	height 32
+	Scale 2.5
+	States
+	{
+	Spawn:
+		MARP F 1 A_LookEx(LOF_NOSOUNDCHECK, 0, 512, 0, 360, "Launch")
+		loop
+	Launch:
+		TNT1 A 0 A_SpawnItemEx("MarsRocket",0,0,0,0,0,1)
+		TNT1 A 175
+		goto Spawn
+	}
+}
+
+actor MarsRocket 
+{
+	//$Category MM8BDM-Interactive Props
+	+SOLID
+	+NOGRAVITY
+	+FORCEYBILLBOARD
+	damagetype "MarsRocket"
+	SelfObituary "$OB_MARSROCKET"
+	Scale 2.5
+	Radius 32
+	Height 48
+	States
+	{
+	Spawn:
+		MARP F 0
+		MARP F 0 A_PlaySoundEx("misc/marslaunch", "auto")
+		MARP F 0 ThrustThingZ(0, 32, 0, 0)
+		MARP FG 1 A_JumpIf(ceilingz - z < 96, "Death")
+		Goto Spawn+2
+	Death:
+		MARP F 0 A_Explode(20,96,0)
+		MARP F 0 A_PlaySoundEx("weapon/crackerexplode","Voice")
+		MARP F 0 A_SpawnItemEx("MarsRocketExplosion")
+		MARP F 0 A_NoBlocking
+		TNT1 A 35
+		stop
+	}
+}
+
+actor MarsRocketExplosion : ExplosionEffect2 {}
+
+actor MarsTyhorn 11760
+{
+	//$Category MM8BDM-Props
+	height 128
+	radius 46
+	Scale 2.0
+	States
+	{
+	Spawn:
+		MARP H 1
+		loop
+	}
+}

@@ -1,0 +1,136 @@
+#library "HazardTag"
+#include "zcommon.acs"
+
+#include "8BDMDEFS.acs"
+
+int pln_tagger[MAX_PLAYERS];
+
+bool hazardKillBusy = false; // $MISC
+// $MISC
+script "core_HazardTag" (int evt, int dmg, int type) EVENT
+{
+	if(hazardKillBusy) terminate; // $MISC
+    int tagTid;
+    bool tag = GetCVar("mm8bdm_sv_enablehazardtag");
+    if(tag && evt == GAMEEVENT_ACTOR_DAMAGED) {
+        int pln = PlayerNumber();
+        int atid = pln + PLN_TID;
+
+        SetActivator(atid,AAPTR_DAMAGE_INFLICTOR);
+        str hitter = GetActorClass(0);
+        
+        if(PlayerIsBot(pln) && Stricmp(hitter,"PlayerBotKicker") == 0) {
+            terminate;
+        }
+
+        if(!SetActivator(atid, AAPTR_DAMAGE_SOURCE) || PlayerNumber() == -1 || ActivatorTID() == atid) {
+            SetActivator(atid);
+
+            if(CheckActorInventory(atid, "PlayerPropertyBuddha") >= 1 && GetActorProperty(atid, APROP_Health) - 1 < dmg) {
+                dmg = GetActorProperty(atid, APROP_Health) - 1;
+            }
+
+            if(dmg >= GetActorProperty(atid, AProp_Health) && CheckInventory("HazardTagTimer") > 0) {
+                if(pln_tagger[pln] != 0) {
+                    if(PlayerInGame(pln_tagger[pln]-1000)) {
+                        // do pit kill stuff.
+                        //SetResultValue(0); // $MISC
+
+                        str element = StrParam(s:"HazardTag_", s:type);
+                        int u = UniqueTID();
+                        if(!SpawnForced(element, 0, 0, 0, u, 0))
+                            element = "HazardTag_Default";
+                        Thing_Remove(u);
+						// $MISC
+						hazardKillBusy = true; // $MISC
+						int prehealth = GetActorProperty(atid,APROP_HEALTH); // $MISC
+                        ACS_NamedExecuteWithResult("core_damageactor", element, dmg, atid, pln_tagger[pln]);
+						if(GetActorProperty(atid,APROP_HEALTH)!=prehealth) SetResultValue(0); // $MISC
+						hazardKillBusy = false; // $MISC
+                    }
+                }
+            }
+        } else {
+            // PrintBold(n:0, s:" ", s:type);
+            // SetResultValue(dmg);
+
+            ACS_NamedExecuteWithResult("core_HazardTag_manager",  ActivatorTID(), atid);
+        }
+    }
+}
+
+script "core_HazardTag_duel_e" ENTER
+{
+    if(GetCvar("duel") && GetGamemodeState() == GAMESTATE_INPROGRESS && GetCvar("mm8bdm_sv_duelhazardtag")) {
+        for(int i = 0; i < MAX_PLAYERS; i++) {
+            if (PlayerInGame(i) && i != PlayerNumber()) {
+                ACS_NamedExecuteWithResult("core_HazardTag_manager", i + PLN_TID, 0, -1);
+                break;
+            }
+        }
+    }
+}
+
+script "core_HazardTag_duel_r" RESPAWN
+{
+    ACS_NamedExecuteWithResult("core_HazardTag_duel_e");
+}
+
+script "core_hazardtag_clear" (int who) DISCONNECT
+{
+    int tid = who + PLN_TID;
+
+    for(int i = 0; i < MAX_PLAYERS; i++) {
+        if(pln_tagger[i] == tid) {
+            pln_tagger[i] = 0;
+        }
+    }
+    pln_tagger[who] = 0;
+}
+
+script "core_HazardTag_manager" (int atk_tid, int vic_tid, int time) // if 0 time, use svar
+{
+    if(vic_tid != 0) { SetActivator(vic_tid); }
+    pln_tagger[PlayerNumber()] = atk_tid;
+
+    if(time == 0) { time = GetCVar("mm8bdm_sv_hazardtagtime"); }
+    
+    if(time < 1) {
+        SetInventory("HazardTagTimer", 0);
+        GiveInventory("HazardTagProtect", 1);
+        Delay(1);
+        SetInventory("HazardTagTimer", 1);
+    } else {
+        if(CheckInventory("HazardTagTimer") < time) {
+            SetInventory("HazardTagTimer", time);
+        }
+
+        if(CheckInventory("HazardTagProtect") == 0) {
+            GiveInventory("HazardTagProtect", 1);
+            
+            int counter = 0;
+            while(CheckInventory("HazardTagTimer") > 0 && GetActorProperty(0, AProp_Health) > 0 && PlayerInGame(PlayerNumber())) {
+                delay(1);
+                counter = (counter + 1) % 35;
+                if (counter == 0) {
+                    TakeInventory("HazardTagTimer", 1);
+                }
+            }
+
+            pln_tagger[PlayerNumber()] = 0;
+            TakeInventory("HazardTagProtect", 1);
+        }
+    }
+}
+
+function void SetInventory(str inventory_item, int amount)
+{
+    SetInventory2(inventory_item,amount,CheckInventory(inventory_item));
+}
+
+function void SetInventory2(str inventory_item, int amount, int currentamount)
+{
+    if(amount>currentAmount) GiveInventory(inventory_item,amount-currentAmount);
+    else if(amount<currentAmount) TakeInventory(inventory_item,currentAmount-amount);
+}
+

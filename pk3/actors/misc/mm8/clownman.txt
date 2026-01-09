@@ -1,0 +1,427 @@
+Actor ThunderClawPeg 10632
+{
+//$Category MM8BDM-Interactive Props
+//$Arg0 Chain
+//$Arg0Enum { 0 = "Chain"; 1 = "No Chain"; }
+//$Arg0Type 11
+//$NotAngled
++SHOOTABLE
++NOTAUTOAIMED
++NODAMAGE
++NODAMAGETHRUST
++NOGRAVITY
++NOBLOOD
++QUICKTORETALIATE
++FORCEXYBILLBOARD
++CANTSEEK
+Health 9999
+Mass 99999
+Height 32
+Radius 16
+Speed 0
+painchance 256
+damagefactor "Normal", 0.0
+damagefactor "ThunderClaw", 1.0
+damagefactor "ThunderClawPegHelp", 1.0
+Scale 2.5
+States
+{
+Spawn:
+THOO A 0
+THOO A 0 A_SpawnItemEx("PegChainTop",0,0,20)
+THOO A 0 A_JumpIf(ceilingz - z < 16, "Spawn2")
+THOO A 0 A_JumpIf(Args[0]>0, "Spawn2")
+THOO A 1 A_SpawnItemEx("PegChain",0,0,8,0,0,25)
+Spawn2:
+THOO A 1
+loop
+Pain.ThunderClaw:
+Pain.ThunderClawPegHelp:
+THOO A 0 A_ChangeFlag(SHOOTABLE, false)
+THOO A 2 ACS_NamedExecuteAlways("core_thunderclawpeg", 0, 70)
+THOO A 0 A_ClearTarget
+THOO A 0 A_ChangeFlag(SHOOTABLE, true)
+Goto Spawn2
+}
+}
+
+actor ThunderClawSwingWait : PowerUp { powerup.duration 10 }
+
+actor PegChain
+{
+PROJECTILE
++RIPPER
++DONTBLAST
+Damage(0)
+Height 8
+Radius 8
+Scale 2.5
+States
+{
+Spawn:
+TNT1 A 1 A_SpawnItemEx("PegChainFx")
+Loop
+}
+}
+
+actor PegChainFx
+{
++NOINTERACTION
++NOGRAVITY
++FORCEYBILLBOARD
+Scale 2.5
+States
+{
+Spawn:
+THOO B -1 
+stop
+}
+}
+
+actor PegChainTop
+{
++NOINTERACTION
++NOGRAVITY
++FORCEYBILLBOARD
+Scale 2.5
+States
+{
+Spawn:
+THOO C -1 
+stop
+}
+}
+
+actor ClownSpike 10813
+{
+//$Category MM8BDM-Props
+-SOLID
++FORCEYBILLBOARD
++CLIENTSIDEONLY
+scale 2.5
+States
+{
+Spawn:
+CLSP A 1
+loop
+}
+}
+
+actor ClownTrain 10814
+{
+//$Category MM8BDM-Interactive Props
++SOLID
++ACTIVATEMCROSS
++NOGRAVITY
++FORCEYBILLBOARD
++CANPASS
++SHOOTABLE
++NOTAUTOAIMED
++NOBLOOD
++NODAMAGE
+Height 64
+Radius 48
+Speed 7
+scale 2.5
+Mass 999999
+species "MovingPlatform"
++THRUSPECIES
+var int user_playerRiding[64];
+States
+{
+Spawn:
+CLTR A 0
+CLTR A 0 ACS_NamedExecuteAlways("core_stickyLifts",0,STICKYMODE_GUTSLIFT)
+CLTR A 3 A_Recoil(-7)
+CLTR A 0 A_Stop
+CLTR A 0 A_SpawnItemEx("TrainWind",40,0,0, momx, momy, 0, 0, SXF_ABSOLUTEMOMENTUM, 0)
+CLTR A 3 A_Recoil(-7)
+CLTR A 0 A_Stop
+CLTR B 0 A_SpawnItemEx("TrainWind",40,0,0, momx, momy, 0, 0, SXF_ABSOLUTEMOMENTUM, 0)
+CLTR B 3 A_Recoil(-7)
+CLTR B 0 A_Stop
+CLTR B 0 A_SpawnItemEx("TrainWind",40,0,0, momx, momy, 0, 0, SXF_ABSOLUTEMOMENTUM, 0)
+CLTR B 3 A_Recoil(-7)
+CLTR B 0 A_Stop
+CLTR B 0 A_SpawnItemEx("TrainWind",40,0,0, momx, momy, 0, 0, SXF_ABSOLUTEMOMENTUM, 0)
+CLTR B 0 A_SpawnItemEx("TrainSmoke",40,0,64,0,0,5)
+Goto Spawn+2
+}
+}
+
+actor TrainSmoke
+{
++FORCEYBILLBOARD
++NOGRAVITY
++NOINTERACTION
++CLIENTSIDEONLY
+scale 2.5
+States
+{
+Spawn:
+TRSM ABC 7
+stop
+}
+}
+
+actor TrainWind
+{
+PROJECTILE
++DONTBLAST
++FLOORHUGGER
++RIPPER
+Damage (3)
+Height 24
+Radius 48
+Scale 2.5
+DamageType "ClownTrain"
+SelfObituary "$OB_CLOWNTRAIN"
+States
+{
+Spawn:
+TNT1 A 0 nodelay A_ClearTarget
+TNT1 A 1
+stop
+}
+}
+
+actor ToyGutsManG  11625
+{
+//$Category MM8BDM-Props
++ACTIVATEMCROSS
+scale 2.0
+speed 2
+Height 32
+Radius 32
+Mass 5000
+States
+{
+Spawn:
+GTOY AA 1 A_Wander
+GTOY BB 1 A_Wander
+loop
+}
+}
+
+actor ToyStegoras 11626
+{
+//$Category MM8BDM-Props
++ACTIVATEMCROSS
+Speed 2
+Radius 32
+Height 32
+//scale 0.75
+scale 2.0
+Mass 5000
+States
+{
+Spawn:
+STOY AA 5 A_Wander
+STOY B 8 A_Wander
+loop
+}
+}
+
+actor ToyCutman 11627
+{
+//$Category MM8BDM-Props
+Radius 8
+Height 24
+scale 2.0
+//+CLIENTSIDEONLY
++ACTIVATEMCROSS
+Mass 5000
+GRAVITY 0.75
+States
+{
+Spawn:
+TCUT A 1
+TCUT A 0 ThrustThingZ(0, 25, 0, 1)
+TCUT A 0 ThrustThing (random(0,255), random(0,7))
+Spawn2:
+TCUT A 1
+loop
+}
+}
+
+actor ToyIceMan 11628
+{
+//$Category MM8BDM-Props
+Radius 8
+Height 24
+scale 2.0
+//+CLIENTSIDEONLY
++ACTIVATEMCROSS
+Mass 5000
+GRAVITY 0.75
+States
+{
+Spawn:
+TICE A 1
+TICE A 0 ThrustThingZ(0, 25, 0, 1)
+TICE A 0 ThrustThing (random(0,255), random(0,7))
+Spawn2:
+TICE A 1
+loop
+}
+}
+
+actor ToyDipperDuck 11629
+{
+//$Category MM8BDM-Props
+Radius 16
+Height 48
+scale 2.0
++CLIENTSIDEONLY
++NOINTERACTION
++RANDOMIZE
+States
+{
+Spawn:
+TDUK A 35
+TDUK BC 7
+TDUK D 20
+TDUK CB 7
+loop
+}
+}
+
+actor ClownBoxingGlove
+{
+PROJECTILE
++FLOORHUGGER
++RIPPER
++DONTBLAST
+Damage(0)
+Scale 2.5
+Radius 8
+Height 16
+States
+{
+Spawn:
+CBOX A 0
+CBOX ABCD 2
+CBOX EF 5
+CBOX DCBA 2 
+stop
+}
+}
+
+Actor ClownBell 11664
+{
+//$Category MM8BDM-Props
+Radius 16
+Height 48
+scale 2.0
++NOINTERACTION
+States
+{
+Spawn:
+CBLL A 10
+loop
+BellHit:
+CBLL BACABACA 6
+CBLL BACABACA 10
+Goto Spawn
+}
+}
+
+Actor ClownBellMan 11665
+{
+//$Category MM8BDM-Props
+Radius 16
+Height 48
+scale 2.0
++NOINTERACTION
+States
+{
+Spawn:
+CBLM A 10
+loop
+BellSwing:
+CBLM AB 10
+CBLM CDE 5
+CBLM F 35
+CBLM GHIJ 10
+Goto Spawn
+}
+}
+
+actor ClownHP : CustomInventory
+{
+states
+{
+Pickup:
+TNT1 A 0 
+TNT1 A 0 A_PlaySoundEx("item/energyup", "Body")
+//TNT1 A 0 HealThing(10)
+TNT1 A 0 ACS_NamedExecuteWithResult("core_HealScript",10)
+stop
+}
+}
+
+actor ClownDamage : CustomInventory
+{
+states
+{
+Pickup:
+TNT1 A 0 
+TNT1 A 0 Thing_Damage(tid, 15, 22) // MOD_HIT / "Melee"
+stop
+}
+}
+
+actor ClownKill : CustomInventory
+{
+states
+{
+Pickup:
+TNT1 A 0 
+TNT1 A 0 Thing_Damage(tid, 255, 1000) // "Massacre"
+stop
+}
+}
+
+actor ClownPushEast : CustomInventory
+{
+states
+{
+Pickup:
+TNT1 A 0
+TNT1 A 0 ThrustThingZ(0,40,0,0)
+TNT1 A 0 ThrustThing(0,50,0,0)
+stop
+}
+}
+
+actor ClownPushWest : CustomInventory
+{
+states
+{
+Pickup:
+TNT1 A 0
+TNT1 A 0 ThrustThingZ(0,40,0,0)
+TNT1 A 0 ThrustThing(128,50,0,0)
+stop
+}
+}
+
+actor Kikyoon 25222
+{
+//$Category MM8BDM-Props
++NOGRAVITY
++SOLID
++FLOATBOB
++DONTBLAST
++RANDOMIZE
++FORCEYBILLBOARD
+scale 2.5
+Height 128
+radius 32
+States
+{
+Spawn:
+ROMP G -1
+loop
+}
+}

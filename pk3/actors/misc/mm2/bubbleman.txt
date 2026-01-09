@@ -1,0 +1,289 @@
+actor BubbleSpray 10541
+{
+//$Category MM8BDM-Props
++CLIENTSIDEONLY
++FORCEYBILLBOARD
+-SOLID
+Height 1
+radius 16
+scale 2.5
++NOGRAVITY
++RANDOMIZE
+states
+{
+Spawn:
+BUBS ABC 4
+loop
+}
+}
+
+actor Spiney 10542
+{
+//$Category MM8BDM-Interactive Props
+//$Sprite BUBSD0
++DONTBLAST
++NOGRAVITY
++THRUGHOST
+Height 16
+Radius 16
+scale 2.5
+states
+{
+Spawn:
+TNT1 A 0 
+TNT1 A 1 A_SpawnItemEx("SpikeDamager")
+goto Graphic
+Graphic:
+BUBS D -1
+stop
+}
+}
+
+actor SpikeDamager
+{
+PROJECTILE
++RIPPER
+-SOLID
++DONTBLAST
++NOGRAVITY
++THRUGHOST
++DONTREFLECT
+obituary "AGH"
+Damage (255)
+damagetype "Spiney"
+SelfObituary "$OB_SPINEY"
+Height 16
+Radius 16
+scale 2.5
+states
+{
+Spawn:
+TNT1 A 0 A_ClearTarget
+TNT1 A 35
+Loop
+Death:
+TNT1 A 35
+TNT1 A 0 A_SpawnItemEx("SpikeDamager")
+stop
+}
+}
+
+actor BubbleSpawner 10543
+{
+//$Category MM8BDM-Props
+//$Sprite BUBSE0
++CLIENTSIDEONLY
++NOGRAVITY
+Height 1
+Radius 32
+-SOLID
+States
+{
+Spawn:
+TNT1 A 3
+TNT1 A 0 A_Jump(5, "Bubble")
+loop
+Bubble:
+TNT1 A 0 A_SpawnItemEx("BubbleFX",random(-64,64),random(-64,64),0,0,0,6,0)
+Goto Spawn
+}
+}
+
+actor BubbleFX
+{
+-SOLID
+PROJECTILE
+damage 0
+height 2
+radius 2
++CLIENTSIDEONLY
++NOGRAVITY
++DONTBLAST
++DONTREFLECT
+scale 2.5
+States
+{
+Spawn:
+BUBS E 0
+BUBS E 5 A_Recoil(-10)
+BUBS E 0 A_Recoil(10)
+BUBS E 5 A_Recoil(10)
+BUBS E 0 A_Recoil(-10)
+loop
+}
+}
+
+actor BigFish 
+{
++CLIENTSIDEONLY
++FORCEYBILLBOARD
+height 16
+radius 16
+scale 2.5
+ReactionTime 25
+States
+{
+Spawn:
+BIGF A 0
+BIGF A 0 ThrustThingZ(0, 90, 0 ,0)
+BIGF AB 5
+Goto Spawn2
+Spawn2:
+BIGF ABAB 5 A_JumpIf(z-floorz <=32, "Death")
+BIGF A 0 A_CountDown
+loop
+Death:
+TNT1 A 0 
+stop
+}
+}
+
+actor Anko 11671
+{
+//$Category MM8BDM-Props
++CLIENTSIDEONLY
++NOINTERACTION
++NOGRAVITY
+-SOLID
+height 160
+radius 112
+scale 2.5
+States
+{
+Spawn:
+ANKO ABCD 5
+loop
+}
+}
+
+actor ShrinkSpawner 11672
+{
+//$Category MM8BDM-Props
+//$Sprite ANKOE1
++NOINTERACTION
++NOGRAVITY
+-SOLID
++LOOKALLAROUND
++DONTBLAST
+scale 2.5
+States
+{
+Spawn:
+TNT1 A 5 A_Look
+loop
+See:
+TNT1 A 40
+TNT1 A 0 A_Jump(32,"ShrinkSpawn")
+TNT1 A 40
+TNT1 A 0 A_Jump(64,"ShrinkSpawn")
+TNT1 A 40
+TNT1 A 0 A_Jump(128,"ShrinkSpawn")
+TNT1 A 80
+goto ShrinkSpawn
+
+ShrinkSpawn:
+TNT1 A 1 A_CustomMissile("Shrink",random(10,110),0,0,2,0)
+Goto See
+}
+}
+
+actor Shrink
+{
+//$Category MM8BDM-Props
+//+CLIENTSIDEONLY
++ACTIVATEMCROSS
+-SOLID
++MISSILE
++NOGRAVITY
++DONTBLAST
++DONTREFLECT
+//+FLOAT
+//+FLOATBOB
+height 54
+radius 30
+Speed 5
+Scale 2.5
+States
+{
+Spawn:
+ANKO EF 5 A_ChangeVelocity(10, 0, 6, CVF_RELATIVE)
+ANKO G 15 A_ChangeVelocity(0, 0, -6, CVF_RELATIVE|CVF_REPLACE)
+ANKO G 0 A_Stop
+//ANKO EF 5 A_Recoil(-10)
+//ANKO G 15 A_Stop
+loop
+}
+}
+
+actor Tanishi
+{
+//$Category MM8BDM-Props
+PROJECTILE
+Damage 0
++RIPPER
++FLOORHUGGER
++DONTBLAST
++BLOODLESSIMPACT
++CLIENTSIDEONLY
++DONTREFLECT
+scale 2.5
+speed 10
+radius 8
+-SOLID
+-NOGRAVITY
+States
+{
+Spawn:
+TNSH AB 8
+loop
+}
+}
+
+actor M-445
+{
+//$Category MM8BDM-Props
++CLIENTSIDEONLY
+scale 2.5
+//+NOINTERACTION
+-SOLID
++NOGRAVITY
++FLOATBOB
+States
+{
+Spawn:
+M445 CD 4
+loop
+}
+}
+
+actor ClawPropBubble
+{
+//$Category MM8BDM-Props
+PROJECTILE
+Radius 2
+Height 2
++DONTBLAST
++ACTIVATEMCROSS
++ACTIVATEPCROSS
++DONTREFLECT
++RIPPER
+Damage 0
+DamageType "Misc"
+Speed 0
+-NOGRAVITY
++CLIENTSIDEONLY
+//gravity 0.4
+renderstyle translucent
+scale 2.5
+States
+{
+Spawn:
+CLAW B 0// A_SetAngle(random(0,360))
+CLAW B 0 A_Changeflag("LOWGRAVITY",1)
+CLAW B 1 A_SetAngle(random(0,360))
+CLAW B 3
+Falling:
+CLAW AB 4
+loop
+}
+}

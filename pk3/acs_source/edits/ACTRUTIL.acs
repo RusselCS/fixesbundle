@@ -1,0 +1,482 @@
+#library "ACTRUTIL"
+#include "zcommon.acs"
+
+#include "8BDMLIB.acs"
+
+// getPlayersInRadiusFlags
+// PRF means "Players Radius Flag"
+//
+#define PRF_CUBE            1
+#define PRF_CHECKCOLLISION  2
+#define PRF_CLOSESTPOINTER  4
+
+// Gets a count of players in a specified radius.
+// Radius: The radius of the check, in map units.
+// [TODO] Flags (?????)
+// Returns: The number of players whose origin is within the specified radius.
+//
+script "core_getPlayersInRadius" (int radius, int flags, int pointer, int unused)
+{
+	int ret = 0;
+    int closestDist = radius * 2;
+    int closest = -1;
+
+    //Log(s:"[core_getPlayersInRadius] Radius: ", i:radius, s:"; flags: ", i:flags, s:"; pointer: ", i:pointer);
+
+	if(radius == 0) {
+        //Log(s:"Updating radius...");
+        radius = 16;
+    }
+    
+    int baseRadius = radius;
+
+    bool checkCollision = flags & PRF_CHECKCOLLISION;
+    bool checkCube = flags & PRF_CUBE;
+    bool setclosest = flags & PRF_CLOSESTPOINTER;
+
+	for(int i = 0; i < getMaxPlayers(); i++)
+	{
+        if(playerInGame(i)) {
+            int tid = i+1000;
+
+            if(checkCollision) {
+
+                radius = baseRadius + (GetActorProperty(tid, APROP_Radius) >> 16);
+            }
+
+            if(checkCube) {
+                int x = abs((GetActorX(tid)>>16)-(GetActorX(0)>>16));
+                int y = abs((GetActorY(tid)>>16)-(GetActorY(0)>>16));
+                int z = abs((GetActorZ(tid)>>16)+radius/2-(GetActorZ(0)>>16));
+
+                //PrintBold(s:"[checkCube] radius: ", i:radius, s:" [] ", i:x, s:", ", i:y, s:", ", i:z);
+
+                if(x < radius && y < radius && z < radius) {
+                    ret++;
+                    if(setclosest && (x < closestDist || y < closestDist || z < closestDist)) {
+                        closestDist = min(closestDist, x);
+                        closestDist = min(closestDist, y);
+                        closestDist = min(closestDist, z);
+                        closest = tid;
+                    }
+                }
+            } else {
+                int dist = xyzDistance(tid, 0);
+                if(dist < radius) {
+                    ret++;
+                    if(setclosest && radius < closestDist) {
+                        closestDist = radius;
+                        closest = tid;
+                    }
+                }
+            }
+
+            if(radius != baseRadius) {
+                radius = baseRadius;
+            }
+        }
+	}
+
+    if(setclosest && closest != 0) {
+        setPointer(pointer, closest);
+    }
+
+	SetResultValue(ret);
+}
+
+// [Mess] Returns 1 if a player is within Distance
+Script "core_checkDistance" (int Distance)
+{
+int ReturnThis=0;
+For(int i = 0; i < ServerMax; i++)
+	{
+	If(PlayerInGame(i) && i != PlayerNumber())
+		{
+		If(xyzdistance(ActivatorTID(), i+1000) < Distance){ReturnThis=1;break;}
+		}
+	}
+SetResultValue(ReturnThis);
+}
+
+// Gets a player's team
+script "core_getplayerteam" (int player)
+{
+	if(player == -1){player = PlayerNumber();}
+	SetResultValue(GetPlayerInfo(player, PLAYERINFO_TEAM));
+}
+
+// Used for trailer recording. Press use to stop
+script "core_moveme" (int velx, int vely, int velz)
+{
+	while(!(GetPlayerInput(PlayerNumber(), INPUT_BUTTONS) & BT_USE)){
+	SetActorVelocity(0, velx<<16, vely<<16, velz<<16, 0, 0);
+	Delay(1);
+	}
+}
+
+//Check if Target is out of commision
+script "core_targetexists" (int tracer, int noTID)//This is for projectiles to check if their owner spectated, disconnected, or is dead.
+{
+    
+    if(tracer==0)
+    {    
+        if(!SetActivatorToTarget(0))
+        {
+        SetResultValue(0);
+        terminate;
+        }
+    }
+    
+    if(tracer==1)
+    {
+        if(!SetActivator(0, AAPTR_TRACER))
+        {
+        SetResultValue(0);
+        terminate;
+        }
+    }
+    
+    if(ClassifyActor(0) & ACTOR_PLAYER && ((ActivatorTID() == 0 && !noTID) || !PlayerInGame(PlayerNumber())))
+    {
+        SetResultValue(0);
+        terminate;
+    }
+    
+    if(ClassifyActor(0) & (ACTOR_DEAD|ACTOR_NONE|ACTOR_WORLD))
+    {
+        SetResultValue(0);
+        terminate;
+    }
+
+    SetResultValue(1);
+}
+
+// Get moving speed of an actor
+script "core_getspeed" (int l)
+{
+	int x, y, z, speed;
+	x = GetActorVelX(0);
+    y = GetActorVelY(0);
+    z = GetActorVelZ(0);
+    speed = VectorLength(VectorLength(x, y), z);
+	if(l){Log(s:"speed: ", f:speed);}
+	SetResultValue(speed);
+}
+
+script "core_getactorx" (int pointer, int tid, int fixed)
+{
+	SetActivator(tid, pointer);
+	int ret = GetActorX(0);
+	if(!fixed) { ret = ret >> 16; }
+	SetResultValue(ret);
+}
+
+script "core_getactory" (int pointer, int tid, int fixed)
+{
+	SetActivator(tid, pointer);
+	int ret = GetActorY(0);
+	if(!fixed) { ret = ret >> 16; }
+	SetResultValue(ret);
+}
+
+script "core_getactorz" (int pointer, int tid, int fixed)
+{
+	SetActivator(tid, pointer);
+	int ret = GetActorZ(0);
+	if(!fixed) { ret = ret >> 16; }
+	SetResultValue(ret);
+}
+
+// Radial Push / Pull Script. Force falls off with distance unless Linear is set to > 0. 
+// maxforce can be 0 to simply count players in a radius
+
+script "core_radiusPull" (int maxforce, int maxRange, int noFalloff)
+{
+	if(maxRange == 0){terminate;}
+
+	int targetTID;
+	int angle;
+	int finalforce;
+	int distance;
+	int userTID;
+	int userTeam = -1;
+	int userCount = 0;
+
+	if(ActivatorTID() == 0)
+	{
+		userTID = ACS_NamedExecuteWithResult("core_gettarget", 0);
+		userTeam = GetPlayerInfo(userTID - 1000, PLAYERINFO_TEAM);
+	}
+	else
+	{
+		userTID = ActivatorTID();
+	}
+
+	for(int p = 0;p < ServerMax; p++)
+	{
+		if(!PlayerInGame(p))
+		{
+			continue;
+		}
+		if(isTeamGame)
+		{
+			if(userTeam == GetPlayerInfo(p, PLAYERINFO_TEAM))
+			{
+				continue;
+			}
+		}
+		
+		targetTID = p+1000;
+		if(CheckActorInventory(targetTID, "NoPushFlag") <= 0 && xyzDistance(0, targetTID) < maxRange && userTID != targetTID)
+		{	
+			userCount++;
+			distance = xyzDistance(0,targetTID);
+			finalforce = ceilOld(FixedMul(maxforce << 16, 1.0 - FixedDiv(distance, maxRange)));
+			if(finalforce > maxforce || noFalloff > 0 )
+			{
+				finalforce = maxforce;
+			}
+			
+			angle = VectorAngle(GetActorX(0) - GetActorX(targetTID), GetActorY(0) - GetActorY(targetTID)) >> 8;
+			if(distance>40 || finalforce < 0)
+			{
+				ThrustThing(angle, finalforce, false, targetTID);
+				ACS_NamedExecuteWithResult("core_HazardTag_manager",  userTID, targetTID, 1); // $MISC
+			}
+		}
+		
+	}
+	SetResultValue(userCount); // Returns amount of players caught in the pull
+}// End script "core_radiusPull"
+
+// Pushes/pulls the calling actor at a given force towards the given pointer
+script "core_knockback" (int force, int forcez, int aimed, int ptr)
+{
+	int pX = ACS_NamedExecuteWithResult("core_getactorx", ptr, 0, true);
+	int pY = ACS_NamedExecuteWithResult("core_getactory", ptr, 0, true);
+    
+	int yaw = VectorAngle(GetActorX(0) - pX, GetActorY(0) - pY) >> 8;
+
+	if(aimed) {
+		int pitch = ACS_NamedExecuteWithResult("core_GetPtrPitch", ptr, 0, true);
+		int heightmul = sin(-pitch);
+		int distmul = cos(pitch);
+
+		ThrustThingZ(0, fixedMul(force, heightmul) * 4, 0, 0);
+		ThrustThing(yaw, fixedMul(force, distmul), 1, 0);
+	} else {
+		ThrustThingZ(0, forcez, 0, 0);
+		ThrustThing(yaw, force, 1, 0);
+	}
+}
+
+// Get Actor args
+script "core_GetActorArg" (int tid, int argNum)
+{
+	SetResultValue(GetActorArg(tid, argNum));
+}
+
+int argHold;
+
+function int GetActorArg(int tid, int argNum)
+{
+GiveActorInventory(tid,strParam(s:"GetArg",i:argNum),1);
+return argHold;
+}
+
+script "core_SetArgHold" (int i) CLIENTSIDE
+{
+argHold = i;
+}
+
+// Get info about actor's current armor
+script "core_getarmorinfo" (int info, int ptr)
+{
+	switch(ptr) {
+		default:
+			Log(i:ptr,s:" >> Invalid Pointer for core_getarmorinfo");
+			break;
+		Case 0:
+			break;
+		Case AAPTR_NULL:
+		Case AAPTR_TARGET:
+		Case AAPTR_MASTER:
+		Case AAPTR_TRACER:
+		Case AAPTR_PLAYER_GETTARGET:
+		Case AAPTR_PLAYER_GETCONVERSATION:
+		Case AAPTR_FRIENDPLAYER:
+			SetActivator(0,ptr);
+			break;
+	}
+
+	//0 is string (s), 2 is fixed point number (f)
+	SetResultValue(GetArmorInfo(info));
+}
+
+// Script that emulates A_Explode using 'core_damageactor'
+script "core_teamexplode" (int type, int dmg, int range, int fullRange)
+{
+	int owner = ACS_NamedExecuteWithResult("core_gettarget");
+	int ownTeam = GetPlayerInfo(owner - PLN_TID, PLAYERINFO_TEAM);
+
+	fullRange = clamp(fullRange, 0, range - 1);
+
+	int rangedFixed = range << 16;
+	int bombDist = (range - fullRange);
+	int bombdistancefloat = 1.0 / bombDist;
+
+	int mX = getActorX(0);
+	int mY = getActorY(0);
+	int mZ = getActorZ(0);
+
+	for(int i = 0; i < ServerMAX; i++) {
+
+		int finDmg = 0;
+		int target = i + PLN_TID;
+
+		int points = -dmg;
+
+		if(!CheckFlag(target, "NORADIUSDMG")) {
+			if(CheckSight(0, target, CSF_NOFAKEFLOORS)) {
+				int tX = GetActorX(target);
+				int tY = GetActorY(target);
+				int boxRadius = GetActorProperty(target, AProp_Radius);
+				
+				if(inBoundingBox(tX, tY, mX, mY, boxRadius, range)) {
+					int tarZ = getActorZ(target);
+					int tarH = getActorProperty(target, AProp_Height);
+
+					int dX = abs(tX - mX);
+					int dY = abs(tY - mY);
+
+					int len = max(dX, dY);
+
+					if (mZ < tarZ || mZ >= tarZ + tarH)
+					{
+						int dz;
+
+						if (mZ > tarZ)
+						{
+							dz = mZ - tarZ - tarH;
+						}
+						else
+						{
+							dz = tarZ - mZ;
+						}
+						if (len <= boxradius)
+						{
+							len = dz;
+						}
+						else
+						{
+							len -= boxradius;
+							len = VectorLength(len, dz);
+						}
+					}
+					else
+					{
+						len -= boxradius;
+						len = max(0.0, len);
+					}
+					
+					int fullRangeFixed = fullRange << 16;
+					len = clamp(len - fullRangeFixed, 0, len);
+
+					int dmgFixed = dmg << 16;
+					int lenFactored = FixedMul(len, bombdistancefloat);
+					int lenFactoredInvert = 1.0 - lenFactored;
+					points = FixedMul(dmgFixed, lenFactoredInvert);
+
+					if((points * dmg) > 0) {
+						int pointsInt = points >> 16;
+						finDmg = abs(pointsInt);
+						
+						if(finDmg > 0) {
+							int tarTeam = GetPlayerInfo(i, PLAYERINFO_TEAM);
+
+							if(isTeamGame) {
+								if(ownTeam == tarTeam) {
+									ACS_NamedExecuteWithResult("core_damageactor", type, finDmg, target, 0);
+								} else {
+									ACS_NamedExecuteWithResult("core_damageactor", type, finDmg, target, owner);
+								}
+							} else {
+								if(owner == target) {
+									ACS_NamedExecuteWithResult("core_damageactor", type, finDmg, target, 0);
+								} else {
+									ACS_NamedExecuteWithResult("core_damageactor", type, finDmg, target, owner);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+script "core_damageactor" (int type, int amt, int target, int owner)
+{
+	int u = UniqueTID();
+	int r = SpawnSpotCenterForced(type, target, u, 0);
+	if(!r || !CheckFlag(u, "MISSILE") || !CheckForActorVar(u, "user_damage")) {
+		PrintBold(s:"\cgcore_damageactor: actor type \c*", s:type, s:" \cginvalid. Please make sure it inherits from BasicACSDamager.");
+		terminate;
+	}
+	SetActivator(u);
+	if(owner != 0)
+		SetPointer(AAPTR_TARGET, owner);
+	SetUserVariable(0, "user_damage", amt);
+	Thing_ChangeTID(0, 0);
+	SetActorState(0,"Spawn1"); //hurry up lmao // $MISC
+}
+
+function bool SpawnSpotCenterForced(str type, int spot, int me, int angle)
+{
+	return SpawnForced(type, GetActorX(spot), GetActorY(spot), GetActorZ(spot) + GetActorProperty(spot, AProp_Height) / 2, me, angle);
+}
+
+function bool SpawnSpotCenter(str type, int spot, int me, int angle)
+{
+	return Spawn(type, GetActorX(spot), GetActorY(spot), GetActorZ(spot) + GetActorProperty(spot, AProp_Height) / 2, me, angle);
+}
+
+function bool inBoundingBox (int tid1x, int tid1y, int tid2x, int tid2y, int rad1, int rad2)
+{
+	rad2 = rad2 << 16;
+    int d = max(abs(tid1x - tid2x), abs(tid1y - tid2y));
+    return d < rad1+rad2;
+}
+
+// [Trill] Generic Elec Beam script that allows height checks.
+// Activator: Player who crossed the Elec Beam
+script "core_elecbeam" (int mn, int mx)
+{
+if (GetActorZ(0) >= (mn << 16) && GetActorZ(0) < (mx << 16))
+    {
+    GiveReplacedInventory("ElecBeamDamager", 1);
+    }
+}
+
+// Disable monster blocking on lines specifically to prevent bot swarming.
+Script "core_clearbotline" (int line)
+{
+	if(GetCvar("mm8bdm_sv_nobotblocklines"))
+	{
+	Line_SetBlocking(line, 0, BLOCKF_MONSTERS);
+	}
+}
+
+// Script aliases for these functions that allows maps to call them easier
+script "core_GiveActorReplacedInventory" (int tid, int item, int amount)
+{
+    SetResultValue(GiveActorReplacedInventory(tid, item, amount));
+}
+
+script "core_GiveReplacedInventory" (int item, int amount)
+{
+    SetResultValue(GiveReplacedInventory(item, amount));
+}
+
+// Numbered script wrapper for manually applying specials
+script 942 (int mn, int mx) { ACS_NamedExecuteWithResult("core_elecbeam", mn, mx); }

@@ -1,0 +1,59 @@
+Actor FireSnakey
+{
++ISMONSTER
+PROJECTILE
++DONTBLAST
++NOINTERACTION
++NOCLIP
+height 1
+radius 1
+Speed 0
+scale 2.5
+states
+{
+Spawn:
+SNKY G 0
+TNT1 A 2 A_SpawnItemEx("FireSnakeyHead", 0, 0, 4, 15,0, 20)
+TNT1 AAAAAAAA 2 A_SpawnItemEx("FireSnakeyBody", 0, 0, 4, 15,0, 20)
+stop
+}
+}
+
+actor FireSnakeyHead
+{
+PROJECTILE
++DONTBLAST
+-NOGRAVITY
++DONTREFLECT
++RIPPER
++BRIGHT
+Damagetype "FireSnakey"
+SelfObituary "$OB_FIRESNAKEY"
+height 1
+radius 1
+Speed 0
+Damage (5)
+scale 2.5
+states
+{
+Spawn:
+SNKY GH 2 
+loop
+Death:
+SNKY G 0
+stop
+}
+}
+
+actor FireSnakeyBody : FireSnakeyHead
+{
+states
+{
+Spawn:
+SNKY I 1
+Loop
+Death:
+SNKY I 0
+stop
+}
+}
