@@ -4,4 +4,5 @@ alias "resetwepreplaces" "pukename \"banwep_resetreplaces\""
 alias "resetitembans" "pukename \"banwep_resetitembans\""
 alias "resetitemreplaces" "pukename \"banwep_resetitemreplaces\""
 
-alias "scorchedearth" "pukename crocutil_scorchedearthmode"
+alias "setscorchedearth" "pukename crocutil_scorchedearthmode"
+alias "setskulltag" "pukename crocutil_skulltagmode"
